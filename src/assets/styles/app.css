@@ -1,0 +1,4 @@
+body {
+  background: linear-gradient(to right, rgb(44, 95, 179), rgb(41, 158, 201), white, white);
+  background-size: 400% 400%;
+}

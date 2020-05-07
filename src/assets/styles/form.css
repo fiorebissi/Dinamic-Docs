@@ -1,0 +1,46 @@
+.Form {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.Form .div_information {
+  height: 18px;
+}
+
+.login {
+  background: linear-gradient(to right, #2c5fb3, #299ec9, white, white);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login__container {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.login__container--form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login__container--form label {
+  font-size: 14px;
+}
+
+::placeholder {
+  color: white;
+}
+
+@media only screen and (max-width: 600px) {
+  .login__container {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    width: 100%;
+  }
+}

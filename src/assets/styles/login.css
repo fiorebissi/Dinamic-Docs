@@ -1,0 +1,30 @@
+@import "animate.css/animate.css";
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+.Login {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  background: linear-gradient(to right, rgb(44, 95, 179), rgb(41, 158, 201), white, white);
+  background-size: 400% 400%;
+  animation: Gradient 5s ease;
+  min-width: 100vw;
+  min-height: 100vh;
+}
+
+.Login .div__forms {
+  width: 20rem;
+}
+
+@keyframes Gradient {
+  0% {
+    background-position: 100%;
+  }
+
+  100% {
+    background-position: 0%;
+  }
+}
