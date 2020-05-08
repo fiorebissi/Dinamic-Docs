@@ -46,7 +46,7 @@ const FormContainer = () => {
       localStorage.setItem('user', JSON.stringify(response.body));
       localStorage.setItem('authorization', authorization);
       animateCSS('.Login', 'fadeOut faster', () => {
-        history.push('/hr');
+        history.push('/home');
       });
     }
   };
