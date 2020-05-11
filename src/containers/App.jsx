@@ -6,6 +6,7 @@ import Index from '../pages/Index';
 import FormClient from '../components/FormClient';
 import FileForm from '../components/FileForm';
 import HomeHeader from '../components/HomeHeader';
+import Layout from'../components/Layout';
 import '../assets/styles/app.css';
 
 const App = () => {
@@ -30,10 +31,12 @@ const App = () => {
               <Index />
             </Route>
             <Route path='/home/formularioCliente'>
-              <ScrollToTop />
-              <FormClient />
+                <HomeHeader/>
+                <ScrollToTop />
+                <FormClient />
             </Route>
             <Route path='/home/fileForm'>
+              <HomeHeader/>
               <ScrollToTop />
               <FileForm />
             </Route>
