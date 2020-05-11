@@ -3,16 +3,10 @@ import { Switch, Route, HashRouter, Redirect } from 'react-router-dom';
 import ScrollToTop from '../components/ScrollToTop';
 import Login from '../pages/Login';
 import Index from '../pages/Index';
-import FormClient from '../components/FormClient';
-<<<<<<< HEAD
+// import FormClient from '../components/FormClient';
 import FormClientContainer from '../components/FormClientContainer';
 import FileForm from '../components/FileForm';
 import HomeHeader from '../components/HomeHeader';
-=======
-import FileForm from '../components/FileForm';
-import HomeHeader from '../components/HomeHeader';
-import Layout from'../components/Layout';
->>>>>>> 859682134845a751115dc0acd872f6c495cf2a41
 import '../assets/styles/app.css';
 
 const App = () => {
@@ -34,6 +28,7 @@ const App = () => {
           <Switch>
             <Route exact path='/home'>
               <ScrollToTop />
+              <HomeHeader />
               <Index />
             </Route>
             <Route path='/home/formularioCliente'>

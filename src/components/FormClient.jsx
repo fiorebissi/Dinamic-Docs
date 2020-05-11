@@ -2,7 +2,7 @@ import React from 'react';
 
 const FormClient = () => {
   return (
-    <main className='bg-white w-full h-full items-center flex flex-col justify-center min-w-full min-h-full'>
+    <main className='pt-8 w-full h-full items-center flex flex-col justify-center min-w-full min-h-full'>
       <form className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4'>
         <div className='mb-4'>
           <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='name'>
