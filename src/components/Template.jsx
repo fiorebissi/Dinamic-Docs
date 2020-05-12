@@ -12,14 +12,14 @@ const Template = () => {
         <div className='tam m-2 border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer'>
           <img src={Galicia} alt='Galicia Template' />
         </div>
-        <div className='tam border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer'>
+        <div className='tam m-2 border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer'>
           <img src={Template2} alt='Template 2' />
         </div>
         <div className='tam m-2 border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer'>
           <img src={Template3} alt='Template 3' />
         </div>
       </div>
-      <h3 className='text-center text-blue-600 text-2xl font-bold'>Usted ha seleccionado este Template:</h3>
+      <h3 id='btnTemplate' className='text-center text-blue-600 text-2xl font-bold hidden'>Usted ha seleccionado este Template:</h3>
     </main>
 
   );

@@ -3,11 +3,9 @@ import { Switch, Route, HashRouter, Redirect } from 'react-router-dom';
 import ScrollToTop from '../components/ScrollToTop';
 import Login from '../pages/Login';
 import Index from '../pages/Index';
-// import FormClient from '../components/FormClient';
 import FormClientContainer from '../components/FormClientContainer';
 import FileForm from '../components/FileForm';
 import HomeHeader from '../components/HomeHeader';
-import '../assets/styles/app.css';
 
 const App = () => {
   return (
@@ -22,23 +20,23 @@ const App = () => {
         </Route>
         <Route path='/header'>
           <ScrollToTop />
-          <HomeHeader />
+          <HomeHeader title='Header' />
         </Route>
         <Route path='/home'>
           <Switch>
             <Route exact path='/home'>
               <ScrollToTop />
-              <HomeHeader />
+              <HomeHeader title='Home' />
               <Index />
             </Route>
             <Route path='/home/formularioCliente'>
               <ScrollToTop />
-              <HomeHeader />
+              <HomeHeader title='Formulario Cliente' />
               <FormClientContainer />
             </Route>
             <Route path='/home/fileForm'>
               <ScrollToTop />
-              <HomeHeader />
+              <HomeHeader title='Formulario Cliente (Excel,Csv)' />
               <FileForm />
             </Route>
           </Switch>
