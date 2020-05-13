@@ -1,44 +1,60 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const FileForm = () => {
 
-  const handleClick = () => {
-    const header = { method: 'POST',
-      body: document.querySelector('#file').files[0],
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    // credentials: 'include',
-    };
-    fetch('http://www.rchdynamic.com.ar/dd/document/create/excel', header)
-      .then((response) => {
-        return response.json();
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-      .then((response) => {
-        console.log(response);
-      });
+  const [dataDOM, setDataDOM] = useState(null);
 
+  const prueba = (e) => {
+    e.preventDefault();
+    const formData = new FormData(document.forms.namedItem('formCsv'));
+    const miInit = {
+      method: 'POST',
+      body: formData,
+      // credentials: 'include',
+    };
+    fetch('http://www.rchdynamic.com.ar/dd/document/create/excel', miInit)
+    // fetch('http://localhost:3000/dd/document/create/excel', miInit)
+      .then((response) => response.json())
+      .catch((error) => console.error('Error:', error))
+      .then((response) => {
+        console.log('Success:', response);
+        setDataDOM(response);
+      });
   };
-  // const handleSubmit = (e) => {
-  //   e.preventDefault();
-  //   console.log('Hola');
-  // };
+
   return (
     <main className='bg-white w-full h-full flex flex-col items-center content-center justify-center min-h-screen'>
-      <button onClick={handleClick} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='button'>Enviar</button>
-      <form method='POST' action='http://www.rchdynamic.com.ar/dd/document/create/excel'>
-        <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='file' name='file' id='file' />
-        <button type='submit'>Enviar</button>
-
+      <form encType='multipart/form-data' method='post' name='formCsv'>
+        <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='file' name='fileCSV' id='file' required />
+        <button onClick={(e) => prueba(e)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='button' value='Enviar'>Enviar</button>
       </form>
+      {dataDOM && dataDOM.body.list_user.map((data, index) => {
+        const { firstName, lastName, email, enterprise } = data;
+        return (
+          <table className='table-auto'>
+            <thead>
+              <tr>
+                <th className='px-4 py-2'>Nombre</th>
+                <th className='px-4 py-2'>Apellido</th>
+                <th className='px-4 py-2'>Email</th>
+                <th className='px-4 py-2'>Empresa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr key={index.id}>
+                <td className='border px-4 py-2'>{firstName}</td>
+                <td className='border px-4 py-2'>{lastName}</td>
+                <td className='border px-4 py-2'>{email}</td>
+                <td className='border px-4 py-2'>{enterprise}</td>
+              </tr>
+            </tbody>
+          </table>
+        );
+      })}
+
     </main>
 
   );
 };
-
-// onSubmit={(e) => handleSubmit(e)}
 
 export default FileForm;

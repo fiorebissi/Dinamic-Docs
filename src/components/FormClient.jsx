@@ -1,8 +1,48 @@
 import React from 'react';
+import swal from 'sweetalert';
 
 const FormClient = () => {
 
   const handleDownload = () => {
+    const header = { method: 'POST',
+      body: JSON.stringify({
+        'name_template': 'mailing',
+        'last_name': document.getElementById('lastname').value,
+        'first_name': document.getElementById('firstname').value,
+        'email': document.getElementById('email').value,
+        'enterprise': document.getElementById('empresa').value,
+        'is_download_file': true,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // credentials: 'include',
+    };
+    fetch('http://www.rchdynamic.com.ar/dd/document/create', header)
+      .then((resp) => {
+        return resp.blob();
+      }).then((blob) => {
+        swal('Ramon Chozas S.A', 'Se ha descargado el archivo correctamente', 'success');
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'filename.html';
+        document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+        a.click();
+        a.remove(); //afterwards we remove the element again
+      });
+    // .then((response) => {
+    //   return response.json();
+    // })
+    // .catch((error) => {
+    //   console.log(error);
+    // })
+    // .then((response) => {
+    //   console.log(response);
+    // });
+
+  };
+  const handleSend = () => {
     const header = { method: 'POST',
       body: JSON.stringify({
         'name_template': 'mailing',
@@ -22,10 +62,12 @@ const FormClient = () => {
         return response.json();
       })
       .catch((error) => {
+        swal('Ramon Chozas S.A', error, 'error');
         console.log(error);
       })
       .then((response) => {
         console.log(response);
+        swal('Ramon Chozas S.A', response.message, 'success');
       });
 
   };
@@ -57,10 +99,10 @@ const FormClient = () => {
           </label>
         </div>
         <div className='flex items-center justify-between'>
-          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
+          <button onClick={handleDownload} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
             Descargar
           </button>
-          <button onClick={handleDownload} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
+          <button onClick={handleSend} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
             Enviar
           </button>
         </div>

@@ -9,7 +9,7 @@ const Index = () => {
           Formulario Cliente
         </Link>
         <Link to='/home/fileForm' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
-          Formulario Lista Clientes (Excell)
+          Formulario Lista Clientes (Csv)
         </Link>
       </div>
 

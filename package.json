@@ -63,6 +63,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.1.2",
+    "sweetalert": "^2.1.2",
     "tailwindcss": "^1.4.1",
     "tippy.js": "^6.2.3"
   }

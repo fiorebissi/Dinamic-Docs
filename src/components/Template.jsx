@@ -19,7 +19,6 @@ const Template = () => {
           <img src={Template3} alt='Template 3' />
         </div>
       </div>
-      <h3 id='btnTemplate' className='text-center text-blue-600 text-2xl font-bold hidden'>Usted ha seleccionado este Template:</h3>
     </main>
 
   );

@@ -36,7 +36,7 @@ const App = () => {
             </Route>
             <Route path='/home/fileForm'>
               <ScrollToTop />
-              <HomeHeader title='Formulario Cliente (Excel,Csv)' />
+              <HomeHeader title='Formulario Cliente (Csv)' />
               <FileForm />
             </Route>
           </Switch>
