@@ -4,7 +4,7 @@ const FileForm = () => {
 
   const [dataDOM, setDataDOM] = useState(null);
 
-  const prueba = (e) => {
+  const handleClick = (e) => {
     e.preventDefault();
     const formData = new FormData(document.forms.namedItem('formCsv'));
     const miInit = {
@@ -26,7 +26,7 @@ const FileForm = () => {
     <main className='bg-white w-full h-full flex flex-col items-center content-center justify-center min-h-screen'>
       <form encType='multipart/form-data' method='post' name='formCsv'>
         <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='file' name='fileCSV' id='file' required />
-        <button onClick={(e) => prueba(e)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='button' value='Enviar'>Enviar</button>
+        <button onClick={(e) => handleClick(e)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='button' value='Enviar'>Enviar</button>
       </form>
       <table className='border-collapse border-2 border-gray-500'>
         <thead>
