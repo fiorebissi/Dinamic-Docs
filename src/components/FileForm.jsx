@@ -31,7 +31,7 @@ const FileForm = () => {
       {dataDOM && dataDOM.body.list_user.map((data, index) => {
         const { firstName, lastName, email, enterprise } = data;
         return (
-          <table className='table-auto'>
+          <table className='border-collapse border-2 border-gray-500'>
             <thead>
               <tr>
                 <th className='px-4 py-2'>Nombre</th>
