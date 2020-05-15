@@ -1,12 +1,11 @@
 import React from 'react';
 import swal from 'sweetalert';
 
-const FormClient = () => {
-
+const FormClient = ({template}) => {
   const handleDownload = () => {
     const header = { method: 'POST',
       body: JSON.stringify({
-        'name_template': 'mailing',
+        'name_template': template,
         'last_name': document.getElementById('lastname').value,
         'first_name': document.getElementById('firstname').value,
         'email': document.getElementById('email').value,
@@ -45,7 +44,7 @@ const FormClient = () => {
   const handleSend = () => {
     const header = { method: 'POST',
       body: JSON.stringify({
-        'name_template': 'mailing',
+        'name_template': template,
         'last_name': document.getElementById('lastname').value,
         'first_name': document.getElementById('firstname').value,
         'email': document.getElementById('email').value,
@@ -73,6 +72,7 @@ const FormClient = () => {
   };
   return (
     <main className='pt-8 w-full h-full items-center flex flex-col justify-center min-w-full min-h-full'>
+      <h1 className='text-gray-700 text-xl font-bold'>Mailing</h1>
       <form className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4'>
         <div className='mb-4'>
           <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='name'>
