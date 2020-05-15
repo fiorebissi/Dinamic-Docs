@@ -22,7 +22,6 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'js/[name].[hash].js',
-    publicPath: 'http://127.0.0.1:8080/',
     chunkFilename: 'js/[id].[chunkhash].js',
   },
   optimization: {
@@ -88,8 +87,8 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/[name].[hash].css',
-      chunkFilename: 'css/[id].[hash].css',
+      filename: './[name].[hash].css',
+      chunkFilename: './[id].[hash].css',
     }),
     new HtmlWebPackPlugin({
       template: path.resolve(__dirname, 'public/index.html'),
@@ -107,7 +106,7 @@ module.exports = {
     new AddAssetHtmlPlugin({
       filepath: path.resolve(__dirname, 'dist/js/*.dll.js'),
       outputPath: 'js',
-      publicPath: 'http://127.0.0.1:8080/js',
+      publicPath: './js',
     }),
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['**/app.*'],
