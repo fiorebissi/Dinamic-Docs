@@ -23,12 +23,12 @@ const FileForm = () => {
       });
   };
 
-  const handleDownload = (index) => {
+  const handleDownload = (index, tipoarch) => {
     const miInit = {
       method: 'GET',
       // credentials: 'include',
     };
-    fetch(`http://www.rchdynamic.com.ar/dd/document/read/${index}`, miInit)
+    fetch(`http://www.rchdynamic.com.ar/dd/document/read/${tipoarch}/${index}`, miInit)
     // fetch('http://localhost:3000/dd/document/create/excel', miInit)
       .then((response) => response.blob())
       .catch((error) => console.error('Error:', error))
@@ -45,11 +45,11 @@ const FileForm = () => {
 
   return (
     <main className='bg-white w-full h-full flex flex-col justify-center items-center min-h-screen'>
-        {/*<Template setTemplate={setTemplate} />*/}
-        <form encType='multipart/form-data' method='post' name='formCsv'>
-          <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='file' name='fileCSV' id='file' required />
-          <button onClick={(e) => handleClick(e)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='button' value='Enviar'>Enviar</button>
-        </form>
+      {/*<Template setTemplate={setTemplate} />*/}
+      <form encType='multipart/form-data' method='post' name='formCsv'>
+        <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='file' name='fileCSV' id='file' required />
+        <button onClick={(e) => handleClick(e)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='button' value='Enviar'>Enviar</button>
+      </form>
       {dataDOM && (
         <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl'>
           <thead>
@@ -64,7 +64,7 @@ const FileForm = () => {
           <tbody>
             {dataDOM.body.list_user.map((data, index) => {
               const { firstName, lastName, email, enterprise } = data;
-              console.log(data)
+              console.log(data);
               const id = index;
               return (
                 <tr key={id}>
@@ -73,7 +73,7 @@ const FileForm = () => {
                   <td className='border px-4 py-2'>{email}</td>
                   <td className='border px-4 py-2'>{enterprise}</td>
                   <td className='h-full w-full flex justify-center items-center'>
-                    <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id +1)}>Download</button>
+                    <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1, 'html')}>Download</button>
                   </td>
                 </tr>
               );

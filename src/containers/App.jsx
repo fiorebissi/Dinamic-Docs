@@ -6,6 +6,7 @@ import Index from '../pages/Index';
 import FormClientContainer from '../components/FormClientContainer';
 import FileForm from '../components/FileForm';
 import HomeHeader from '../components/HomeHeader';
+import IndexPpal from '../pages/IndexPpal';
 
 const App = () => {
   return (
@@ -27,12 +28,31 @@ const App = () => {
             <Route exact path='/home'>
               <ScrollToTop />
               <HomeHeader title='Home' />
+              <IndexPpal />
+            </Route>
+            <Route path='/home/documentosDinamicos'>
+              <ScrollToTop />
+              <HomeHeader title='Documentos Dinamicos' />
               <Index />
             </Route>
-            <Route path='/home/formularioCliente'>
+            <Route path='/home/Pdfs'>
+              <ScrollToTop />
+              <HomeHeader title='Pdfs' />
+              {/* //PDFsForm */}
+            </Route>
+          </Switch>
+        </Route>
+        <Route path='/home'>
+          <Switch>
+            <Route exact path='/home/formularioCliente'>
               <ScrollToTop />
               <HomeHeader title='Formulario Cliente' />
               <FormClientContainer />
+            </Route>
+            <Route path='/home/fileForm'>
+              <ScrollToTop />
+              <HomeHeader title='Formulario Cliente (Csv)' />
+              <Index />
             </Route>
             <Route path='/home/fileForm'>
               <ScrollToTop />
