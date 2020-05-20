@@ -42,19 +42,14 @@ const App = () => {
             </Route>
           </Switch>
         </Route>
-        <Route path='/home'>
+        <Route path='/documentosDinamicos'>
           <Switch>
-            <Route exact path='/home/formularioCliente'>
+            <Route exact path='/documentosDinamicos/formularioCliente'>
               <ScrollToTop />
               <HomeHeader title='Formulario Cliente' />
               <FormClientContainer />
             </Route>
-            <Route path='/home/fileForm'>
-              <ScrollToTop />
-              <HomeHeader title='Formulario Cliente (Csv)' />
-              <Index />
-            </Route>
-            <Route path='/home/fileForm'>
+            <Route path='/documentosDinamicos/fileForm'>
               <ScrollToTop />
               <HomeHeader title='Formulario Cliente (Csv)' />
               <FileForm />
