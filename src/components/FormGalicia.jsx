@@ -39,6 +39,7 @@ const FormGalicia = ({ template }) => {
 
   };
   const handleSend = () => {
+    const BtnDescarga = document.getElementById('BtnDescarga');
     const header = { method: 'POST',
       body: JSON.stringify({
         'name_template': template,
@@ -71,10 +72,19 @@ const FormGalicia = ({ template }) => {
         swal('Ramon Chozas S.A', response.message, 'success');
         return 1;
       });
+
+    if (BtnDescarga.classList.contains('cursor-not-allowed')) {
+      BtnDescarga.classList.remove('opacity-50');
+      BtnDescarga.classList.remove('cursor-not-allowed');
+      BtnDescarga.classList.add('hover:bg-blue-700');
+      BtnDescarga.classList.add('focus:outline-none');
+      BtnDescarga.classList.add('focus:shadow-outline');
+    }
   };
+
   return (
     <main className='pt-8 w-full h-full items-center flex flex-col justify-center min-w-full min-h-full'>
-      <h1 className='text-gray-700 text-xl font-bold'>Galicia</h1>
+      <h1 className='text-gray-700 text-xl font-bold'>{template}</h1>
       <form className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4'>
         <div className='mb-4'>
           <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='name'>
@@ -103,7 +113,7 @@ const FormGalicia = ({ template }) => {
           </label>
         </div>
         <div className='flex items-center justify-between'>
-          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
+          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 text-white font-bold py-2 px-4 rounded opacity-50 cursor-not-allowed' id='BtnDescarga' type='button'>
             Descargar
           </button>
           <button onClick={handleSend} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
@@ -116,3 +126,5 @@ const FormGalicia = ({ template }) => {
 };
 
 export default FormGalicia;
+
+// bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline
