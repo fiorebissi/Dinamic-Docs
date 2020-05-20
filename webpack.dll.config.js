@@ -9,6 +9,8 @@ module.exports = {
       'react',
       'react-dom',
       'react-router-dom',
+      'tippy.js',
+      'fabric',
       '@tippyjs/react',
     ],
   },
