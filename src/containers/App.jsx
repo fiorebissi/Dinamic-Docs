@@ -7,6 +7,8 @@ import FormClientContainer from '../components/FormClientContainer';
 import FileForm from '../components/FileForm';
 import HomeHeader from '../components/HomeHeader';
 import IndexPpal from '../pages/IndexPpal';
+import Pdf from '../pages/Pdf';
+import FirmaDigital from '../pages/FirmaDigital';
 
 const App = () => {
   return (
@@ -35,15 +37,16 @@ const App = () => {
               <HomeHeader title='Documentos Dinamicos' />
               <Index />
             </Route>
-            <Route path='/home/Pdfs'>
+            <Route path='/home/pdfs'>
               <ScrollToTop />
               <HomeHeader title='Pdfs' />
-              {/* //PDFsForm */}
+              <Pdf />
             </Route>
-          </Switch>
-        </Route>
-        <Route path='/home'>
-          <Switch>
+            <Route path='/home/firmar/:id'>
+              <ScrollToTop />
+              <HomeHeader title='Firmar' />
+              <FirmaDigital />
+            </Route>
             <Route exact path='/home/formularioCliente'>
               <ScrollToTop />
               <HomeHeader title='Formulario Cliente' />
