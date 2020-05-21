@@ -49,7 +49,7 @@ const App = () => {
             </Route>
           </Switch>
         </Route>
-        <Route path='/documentosDinamicos'>
+        {/* <Route path='/documentosDinamicos'>
           <Switch>
             <Route exact path='/documentosDinamicos/formularioCliente'>
               <ScrollToTop />
@@ -62,7 +62,7 @@ const App = () => {
               <FileForm />
             </Route>
           </Switch>
-        </Route>
+        </Route> */}
       </Switch>
     </HashRouter>
   );
