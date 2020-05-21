@@ -1,7 +1,8 @@
 import React from 'react';
-import swal from 'sweetalert';
+import Swal from 'sweetalert2';
 
 const FormClient = ({ template }) => {
+  // const BtnDescarga = document.getElementById('BtnDescarga');
   const handleDownload = (index, tipoarch) => {
     const header = { method: 'GET',
       headers: {
@@ -14,7 +15,7 @@ const FormClient = ({ template }) => {
         console.log('Hola');
         return resp.blob();
       }).then((blob) => {
-        swal('Ramon Chozas S.A', 'Se ha descargado el archivo correctamente', 'success');
+        Swal.fire('Ramon Chozas S.A', 'Se ha descargado el archivo correctamente', 'success');
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -55,21 +56,19 @@ const FormClient = ({ template }) => {
         return response.json();
       })
       .catch((error) => {
-        swal('Ramon Chozas S.A', error, 'error');
+        Swal.fire('Ramon Chozas S.A', error, 'error');
         console.log(error);
       })
       .then((response) => {
         console.log(response);
-        swal('Ramon Chozas S.A', response.message, 'success');
+        Swal.fire('Ramon Chozas S.A', response.message, 'success');
       });
 
-    if (BtnDescarga.classList.contains('cursor-not-allowed')) {
-      BtnDescarga.classList.remove('opacity-50');
-      BtnDescarga.classList.remove('cursor-not-allowed');
-      BtnDescarga.classList.add('hover:bg-blue-700');
-      BtnDescarga.classList.add('focus:outline-none');
-      BtnDescarga.classList.add('focus:shadow-outline');
-    }
+    // if (BtnDescarga.disabled) {
+    //   console.log('Hola');
+    //   BtnDescarga.disabled = false;
+    //   BtnDescarga.classList.remove('cursor-not-allowed');
+    // }
 
   };
   return (
@@ -115,7 +114,7 @@ const FormClient = ({ template }) => {
           </label>
         </div> */}
         <div className='flex items-center justify-between'>
-          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 text-white font-bold py-2 px-4 rounded opacity-50 cursor-not-allowed' id='BtnDescarga' type='button'>
+          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-not-allowed' id='BtnDescarga' type='button'>
             Descargar
           </button>
           <button onClick={handleSend} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>

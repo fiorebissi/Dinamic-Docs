@@ -44,7 +44,7 @@ const FileForm = () => {
   };
 
   return (
-    <main className='bg-white w-full h-full flex flex-col justify-center items-center min-h-screen'>
+    <main className='bg-white w-full h-full flex flex-col justify-center items-center pt-8'>
       {/*<Template setTemplate={setTemplate} />*/}
       <form encType='multipart/form-data' method='post' name='formCsv'>
         <input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='file' name='fileCSV' id='file' required />
