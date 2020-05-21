@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Swal from 'sweetalert2';
 import { useParams, useHistory } from 'react-router-dom';
 import withReactContent from 'sweetalert2-react-content';
@@ -16,6 +16,10 @@ const FirmaDigital = () => {
   const [pageNumber, setPageNumber] = useState(1);
   const history = useHistory();
   const { id } = useParams();
+  const canvasSize = useRef({
+    height: 0,
+    width: 0,
+  });
   useEffect(() => {
     const header = {
       method: 'GET',
@@ -41,12 +45,27 @@ const FirmaDigital = () => {
     setNumPages(numPages);
   }
 
+  const resizeCanvas = (height, width) => {
+    const resizedCanvas = document.createElement('canvas');
+    const resizedContext = resizedCanvas.getContext('2d');
+
+    resizedCanvas.height = height;
+    resizedCanvas.width = width;
+
+    const canvas = document.querySelector('#canvas');
+    const context = canvas.getContext('2d');
+
+    resizedContext.drawImage(canvas, 0, 0, height, width);
+    return resizedCanvas;
+  };
+
   const petition = () => {
+    const canvas = resizeCanvas(30, 175);
     const header = {
       method: 'POST',
       body: JSON.stringify({
         encrypted_id: id,
-        sign: document.querySelector('#canvas').toDataURL(),
+        sign: canvas.toDataURL(),
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -124,11 +143,25 @@ const FirmaDigital = () => {
               className='PDFDocument'
               file={`data:application/pdf;base64,${pdf}`}
               onLoadSuccess={onDocumentLoadSuccess}
-              error='Error al mostrar el PDF'
-              loading='Cargando PDF...'
-              noData='No existe PDF'
+              error={<p className='text-lg text-red-700'>Error al mostrar el PDF</p>}
+              loading={<LoaderDualRing />}
+              noData={<p className='text-lg text-red-700'>No existe PDF</p>}
             >
-              <Page pageNumber={pageNumber} className='PDFPage' renderTextLayer={false} renderInteractiveForms={false} scale={2.5} />
+              <Page
+                onLoadSuccess={(page) => {
+                  if (page.pageNumber === 1) {
+                    canvasSize.current = {
+                      height: document.querySelector('.react-pdf__Page__canvas').offsetHeight,
+                      width: document.querySelector('.react-pdf__Page__canvas').offsetWidth,
+                    };
+                  }
+                }}
+                pageNumber={pageNumber}
+                className='PDFPage'
+                renderTextLayer={false}
+                scale={2.5}
+                loading={<div className='flex items-center justify-center' style={{ height: `${canvasSize.current.height}px`, width: `${canvasSize.current.width}px` }}><LoaderDualRing /></div>}
+              />
             </Document>
           </div>
           <div className={`flex items-center ${pageNumber >= numPages && 'invisible'}`}>

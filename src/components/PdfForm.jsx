@@ -12,8 +12,8 @@ const PdfForm = () => {
       body: JSON.stringify({
         'name_template': document.querySelector('#template').value,
         'variables': {
-          firstName: document.getElementById('lastname').value,
-          lastName: document.getElementById('firstname').value,
+          firstName: document.getElementById('firstname').value,
+          lastName: document.getElementById('lastname').value,
           date: new Date().toJSON().slice(0, 10).replace(/-/g, '-'),
           phone: document.getElementById('tel').value,
         },
@@ -38,7 +38,7 @@ const PdfForm = () => {
   const handleSubmit = (e) => {
     const MySwal = withReactContent(Swal);
     MySwal.fire({
-      title: 'Enviando Información...',
+      title: <p className='text-lg md:text-xl'>Enviando Información...</p>,
       html: (
         <LoaderDualRing />
       ),
@@ -55,9 +55,8 @@ const PdfForm = () => {
   };
 
   return (
-    <main className='pt-8 w-full h-full items-center flex flex-col justify-center min-w-full min-h-full animated fadeIn' onSubmit={(e) => handleSubmit(e)}>
-      <h2 className='text-gray-900 text-lg font-bold mb-2'>Paso: 1/2</h2>
-      <form className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4'>
+    <main className='pt-8 w-full h-full items-center flex flex-col justify-center min-w-full min-h-full animated fadeIn'>
+      <form className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4' onSubmit={(e) => handleSubmit(e)}>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='template'>
           Formulario:
           <select id='template' className='block appearance-none w-full border text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline' required>

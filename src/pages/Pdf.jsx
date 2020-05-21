@@ -13,7 +13,7 @@ const Pdf = () => {
   });
 
   const goTo = (path) => {
-    history.push(`/home/pdfs/${path}`);
+    history.replace(`/home/pdfs/${path}`);
     animateCSS('.pdf_body', 'fadeIn');
   };
 
@@ -24,7 +24,7 @@ const Pdf = () => {
 
   return (
     <div className='container mx-auto pt-8'>
-      <div className='flex justify-center text-center space-x-4'>
+      <div className='flex flex-col md:flex-row justify-center text-center space-y-4 md:space-y-0 md:space-x-4'>
         <div>
           <button onClick={() => goTo('manual')} className={`${opcionSelected === 'manual' ? 'bg-blue-700 shadow-outline' : 'bg-blue-500 hover:bg-blue-700 focus:outline-none focus:shadow-outline'}  text-white font-bold py-2 px-4 rounded`} type='button'>
             Cargar Datos Manualmente
@@ -36,6 +36,7 @@ const Pdf = () => {
           </button>
         </div>
       </div>
+      <h2 className='text-gray-900 text-lg font-bold mb-2 text-center py-4'>Paso: 1/2</h2>
       <div className='pdf_body'>
         <Switch>
           <Route exact path='/home/pdfs/manual'>
