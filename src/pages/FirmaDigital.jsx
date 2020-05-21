@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { useParams, useHistory } from 'react-router-dom';
 import withReactContent from 'sweetalert2-react-content';
+import { Document, Page } from 'react-pdf/dist/entry.webpack';
 import Firmar from '../components/Firmar';
 import { b64toBlob } from '../funciones';
 import LoaderDualRing from '../components/LoaderDualRing';
+import arrow from '../assets/static/arrow.svg';
+import '../assets/styles/resumePage.css';
 
 const FirmaDigital = () => {
   const [pdf, setPdf] = useState(null);
   const [url, setUrl] = useState(false);
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
   const history = useHistory();
   const { id } = useParams();
   useEffect(() => {
@@ -31,6 +36,10 @@ const FirmaDigital = () => {
         setPdf(response.body.base64);
       });
   }, []);
+
+  function onDocumentLoadSuccess({ numPages }) {
+    setNumPages(numPages);
+  }
 
   const petition = () => {
     const header = {
@@ -98,10 +107,41 @@ const FirmaDigital = () => {
   };
 
   return (
-    <div className='animated fadeIn'>
-      <div className='flex justify-center'>
-        <object height='500' width='100%' aria-label='Tu pdf' data={`data:application/pdf;base64,${pdf}`} />
+    <div className='animated fadeIn py-6'>
+      <h2 className='text-gray-900 text-xl font-bold mb-2 text-center pb-4'>Paso: 2/2</h2>
+      <div className='flex flex-col justify-center items-center'>
+        <p className='text-center text-gray-700 font-bold text-lg'>
+          {`Pagina ${pageNumber} de ${numPages}`}
+        </p>
+        <div className='flex justify-around'>
+          <div className={`flex items-center ${pageNumber <= 1 && 'invisible'}`}>
+            <button type='button' onClick={() => setPageNumber(pageNumber - 1)} className='w-8 h-8'>
+              <img className='object-contain' src={arrow} alt='Atras' />
+            </button>
+          </div>
+          <div id='ResumeContainer'>
+            <Document
+              className='PDFDocument'
+              file={`data:application/pdf;base64,${pdf}`}
+              onLoadSuccess={onDocumentLoadSuccess}
+              error='Error al mostrar el PDF'
+              loading='Cargando PDF...'
+              noData='No existe PDF'
+            >
+              <Page pageNumber={pageNumber} className='PDFPage' renderTextLayer={false} renderInteractiveForms={false} scale={2.5} />
+            </Document>
+          </div>
+          <div className={`flex items-center ${pageNumber >= numPages && 'invisible'}`}>
+            <button type='button' onClick={() => setPageNumber(pageNumber + 1)} className='w-8 h-8 rotate-180 transform'>
+              <img className='object-contain' src={arrow} alt='Atras' />
+            </button>
+          </div>
+        </div>
+        <p className='text-center text-gray-700 font-bold text-lg'>
+          {`Pagina ${pageNumber} de ${numPages}`}
+        </p>
       </div>
+
       <div className='flex justify-center mt-4'>
         <div className='max-w-sm w-full h-64'>
           <Firmar />
