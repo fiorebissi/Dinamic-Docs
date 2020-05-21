@@ -8,7 +8,10 @@ module.exports = {
     modules: [
       'react',
       'react-dom',
+      'react-pdf',
       'react-router-dom',
+      'sweetalert2',
+      'sweetalert2-react-content',
       'tippy.js',
       'fabric',
       '@tippyjs/react',
