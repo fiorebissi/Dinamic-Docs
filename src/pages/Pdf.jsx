@@ -12,36 +12,6 @@ const Pdf = () => {
     return path[3];
   });
 
-  const handleSendData = () => {
-    const header = { method: 'POST',
-      body: JSON.stringify({
-        'name_template': template,
-        'variables': {
-          'date': document.getElementById('lastname').value,
-          'firstName': document.getElementById('firstname').value,
-          'lastName': document.getElementById('email').value,
-          'sign': document.getElementById('enterprise').value,
-        },
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      // credentials: 'include',
-    };
-    fetch('http://www.rchdynamic.com.ar/dd/document/create/pdf/pdfToPdf', header)
-      .then((response) => {
-        return response.json();
-      })
-      .catch((error) => {
-        swal('Ramon Chozas S.A', error, 'error');
-        console.log(error);
-      })
-      .then((response) => {
-        console.log(response);
-        swal('Ramon Chozas S.A', response.message, 'success');
-      });
-  };
-
   const goTo = (path) => {
     history.push(`/home/pdfs/${path}`);
     animateCSS('.pdf_body', 'fadeIn');
