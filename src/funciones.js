@@ -38,3 +38,13 @@ export const b64toBlob = (b64Data, contentType = '', sliceSize = 512) => {
   const blob = new Blob(byteArrays, { type: contentType });
   return blob;
 };
+
+export const deviceIs = () => {
+  const TAM_DESKTOP = 1024;
+  const tamaño = window.innerWidth ;
+  return tamaño < TAM_DESKTOP ? 'mobile' : 'desktop';
+};
+
+export const viewportOrientation = () => {
+  return window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+}

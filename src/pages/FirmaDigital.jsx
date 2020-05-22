@@ -4,14 +4,17 @@ import { useParams, useHistory } from 'react-router-dom';
 import withReactContent from 'sweetalert2-react-content';
 import { Document, Page } from 'react-pdf/dist/entry.webpack';
 import Firmar from '../components/Firmar';
-import { b64toBlob } from '../funciones';
+import { b64toBlob, deviceIs, animateCSS, viewportOrientation } from '../funciones';
 import LoaderDualRing from '../components/LoaderDualRing';
 import arrow from '../assets/static/arrow.svg';
 import '../assets/styles/resumePage.css';
+import Modal from '../components/Modal';
+import ModalFirma from '../components/ModalFirma';
 
 const FirmaDigital = () => {
   const [pdf, setPdf] = useState(null);
   const [url, setUrl] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const history = useHistory();
@@ -32,12 +35,16 @@ const FirmaDigital = () => {
         return response.json();
       })
       .catch((error) => {
-        Swal.fire('Error al traer el PDF para firmar', error, 'error');
+        Swal.fire('Error al traer el PDF para firmar', 'error', 'error');
         console.log(error);
       })
       .then((response) => {
         console.log(response);
-        setPdf(response.body.base64);
+        if (response.type === 'error') {
+          Swal.fire('Error al traer el PDF para firmar', response.message, 'error');
+        } else {
+          setPdf(response.body.base64);
+        }
       });
   }, []);
 
@@ -84,7 +91,7 @@ const FirmaDigital = () => {
       });
   };
 
-  const send = () => {
+  const sendFirma = () => {
     const MySwal = withReactContent(Swal);
     Swal.fire({
       title: '¿Enviar Firma?',
@@ -123,14 +130,21 @@ const FirmaDigital = () => {
         });
       }
     });
-  };
+  }
+
+  const handleCloseModal = () => {
+    animateCSS('.Modal', 'fadeOut faster')
+    animateCSS('.Modal__container', 'slideInUp faster', () => {
+      setIsOpen(false)
+    })
+  }
 
   return (
     <div className='animated fadeIn py-6'>
       <h2 className='text-gray-900 text-xl font-bold mb-2 text-center pb-4'>Paso: 2/2</h2>
       <div className='flex flex-col justify-center items-center'>
         <p className='text-center text-gray-700 font-bold text-lg'>
-          {`Pagina ${pageNumber} de ${numPages}`}
+          {pdf && `Pagina ${pageNumber} de ${numPages}`}
         </p>
         <div className='flex justify-around'>
           <div className={`flex items-center ${pageNumber <= 1 && 'invisible'}`}>
@@ -141,7 +155,7 @@ const FirmaDigital = () => {
           <div id='ResumeContainer'>
             <Document
               className='PDFDocument'
-              file={`data:application/pdf;base64,${pdf}`}
+              file={pdf && `data:application/pdf;base64,${pdf}`}
               onLoadSuccess={onDocumentLoadSuccess}
               error={<p className='text-lg text-red-700'>Error al mostrar el PDF</p>}
               loading={<LoaderDualRing />}
@@ -171,18 +185,28 @@ const FirmaDigital = () => {
           </div>
         </div>
         <p className='text-center text-gray-700 font-bold text-lg'>
-          {`Pagina ${pageNumber} de ${numPages}`}
+          {pdf && `Pagina ${pageNumber} de ${numPages}`}
         </p>
       </div>
 
-      <div className='flex justify-center mt-4'>
+      {deviceIs() ===  'desktop' ? (<div className='flex justify-center mt-4'>
         <div className='max-w-sm w-full h-64'>
           <Firmar />
         </div>
-      </div>
-      <div className='mt-4 text-center'>
-        <button onClick={send} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>¡Firmar!</button>
-      </div>
+      </div>)
+      : (<ModalFirma setIsOpen={setIsOpen} isOpen={isOpen} handleCloseModal={handleCloseModal} confirm={sendFirma} />)}
+      {pdf && <div className='mt-4 text-center'>
+        <button onClick={deviceIs() ===  'desktop' ? sendFirma : () => {
+          if (viewportOrientation() === 'portrait') {
+            Swal.fire({
+              title: 'Debe poner su dispositivo de forma horizontal',
+              icon: 'error',
+            })
+          } else {
+            setIsOpen(true)
+          }
+          }} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>¡Firmar!</button>
+      </div>}
       {url && (
         <div className='text-center hidden'>
           <a id='link' className='underline text-blue-500 hover:text-blue-700' download={`zurich${id}.pdf`} href={url} title='Download pdf document'>hola</a>

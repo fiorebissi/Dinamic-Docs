@@ -32,29 +32,25 @@ const FormContainer = () => {
     });
   };
 
-  const responseLogin = (response, authorization) => {
+  const responseLogin = (response) => {
     console.log(response);
     document.body.classList.remove('cursor-wait');
-    if (!response || response.result === 'error') {
+    if (!response || response.type === 'error') {
       document.querySelector('.button_submit_Form').removeAttribute('disabled');
       document.querySelector('.button_submit_Form').classList.remove('opacity-50', 'cursor-not-allowed');
       animateCSS('.p_information', 'fadeOut faster', () => {
         setInformation(`⚠️ ${!response ? 'Error' : response.message}`);
         animateCSS('.p_information', 'fadeIn faster');
       });
-    } else if (response.result === 'success') {
+    } else if (response.type === 'success') {
       localStorage.setItem('user', JSON.stringify(response.body));
-      localStorage.setItem('authorization', authorization);
-      animateCSS('.Login', 'fadeOut faster', () => {
-        history.push('/home');
-      });
+      history.push('/home');
     }
   };
 
   const handleSubmit = (e) => {
     const username = document.querySelector('#username');
     const password = document.querySelector('#password');
-    let authorization;
     e.preventDefault();
     document.body.classList.add('cursor-wait');
     document.querySelector('.button_submit_Form').setAttribute('disabled', '');
@@ -73,26 +69,24 @@ const FormContainer = () => {
 
     const header = { method: 'POST',
       body: JSON.stringify({
-        'alias': username.value,
-        'contraseña': password.value,
+        'username': username.value,
+        'password': password.value,
       }),
       headers: {
         'Content-Type': 'application/json',
+        credentials: 'include'
       },
-      credentials: 'include',
     };
 
-    fetch('http://www.dynamicdoc.com.ar/hoja_de_ruta/login', header)
+    fetch('http://www.rchdynamic.com.ar/dd/login', header)
       .then((response) => {
-        authorization = response.headers.get('authorization');
-        authorization = 'Bearer '.concat(authorization);
         return response.json();
       })
       .catch((error) => {
         console.log(error);
       })
       .then((response) => {
-        responseLogin(response, authorization);
+        responseLogin(response);
       });
   };
 
