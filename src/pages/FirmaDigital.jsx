@@ -67,12 +67,13 @@ const FirmaDigital = () => {
   };
 
   const petition = () => {
-    const canvas = resizeCanvas(30, 175);
+    //const canvas = resizeCanvas(30, 175);
+    console.log(canvas.toDataURL())
     const header = {
       method: 'POST',
       body: JSON.stringify({
         encrypted_id: id,
-        sign: canvas.toDataURL(),
+        sign: document.querySelector('#canvas').toDataURL(),
       }),
       headers: {
         'Content-Type': 'application/json',

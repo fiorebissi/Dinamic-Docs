@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { fabric } from 'fabric';
-import '../assets/styles/firmar.css';
 
 const Firmar = ({position, confirm}) => {
   const canvas = useRef(false);
