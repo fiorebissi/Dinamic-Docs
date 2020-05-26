@@ -1,4 +1,5 @@
 import React from 'react';
+import Swal from 'sweetalert2';
 
 const FormGalicia = ({ template }) => {
   const handleDownload = (index, tipoarch) => {
@@ -15,10 +16,10 @@ const FormGalicia = ({ template }) => {
         }
         return resp.blob();
       }).catch((error) => {
-        swal('Ramon Chozas S.A', error, 'error');
+        Swal.fire('Ramon Chozas S.A', error, 'error');
       })
       .then((blob) => {
-        swal('Ramon Chozas S.A', 'Se ha descargado el archivo correctamente', 'success');
+        Swal.fire('Ramon Chozas S.A', 'Se ha descargado el archivo correctamente', 'success');
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -39,7 +40,7 @@ const FormGalicia = ({ template }) => {
 
   };
   const handleSend = () => {
-    const BtnDescarga = document.getElementById('BtnDescarga');
+    // const BtnDescarga = document.getElementById('BtnDescarga');
     const header = { method: 'POST',
       body: JSON.stringify({
         'name_template': template,
@@ -61,25 +62,22 @@ const FormGalicia = ({ template }) => {
         return response.json();
       })
       .catch((error) => {
-        swal('Ramon Chozas S.A', error, 'error');
+        Swal.fire('Ramon Chozas S.A', error, 'error');
         console.log(error);
       })
       .then((response) => {
         if (response.result !== 'html_created') {
-          swal('Ramon Chozas S.A', response.message, 'error');
+          Swal.fire('Ramon Chozas S.A', response.message, 'error');
           return 0;
         }
-        swal('Ramon Chozas S.A', response.message, 'success');
+        Swal.fire('Ramon Chozas S.A', response.message, 'success');
         return 1;
       });
 
-    if (BtnDescarga.classList.contains('cursor-not-allowed')) {
-      BtnDescarga.classList.remove('opacity-50');
-      BtnDescarga.classList.remove('cursor-not-allowed');
-      BtnDescarga.classList.add('hover:bg-blue-700');
-      BtnDescarga.classList.add('focus:outline-none');
-      BtnDescarga.classList.add('focus:shadow-outline');
-    }
+    // if (BtnDescarga.disabled) {
+    //   BtnDescarga.disabled = false;
+    // BtnDescarga.classList.remove('cursor-not-allowed');
+    // }
   };
 
   return (
@@ -113,7 +111,7 @@ const FormGalicia = ({ template }) => {
           </label>
         </div>
         <div className='flex items-center justify-between'>
-          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 text-white font-bold py-2 px-4 rounded opacity-50 cursor-not-allowed' id='BtnDescarga' type='button'>
+          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-not-allowed' id='BtnDescarga' type='button'>
             Descargar
           </button>
           <button onClick={handleSend} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
@@ -126,5 +124,3 @@ const FormGalicia = ({ template }) => {
 };
 
 export default FormGalicia;
-
-// bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline

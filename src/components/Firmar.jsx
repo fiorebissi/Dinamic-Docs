@@ -1,8 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { fabric } from 'fabric';
-import '../assets/styles/firmar.css';
 
-const Firmar = () => {
+const Firmar = ({position, confirm}) => {
   const canvas = useRef(false);
 
   const resizeCanvas = (canvas, render) => {
@@ -30,9 +29,10 @@ const Firmar = () => {
   };
 
   return (
-    <div className='firmar'>
-      <canvas className='border-2 border-black' id='canvas' />
-      <div className='text-right mt-1'>
+    <div className='firmar w-full h-full'>
+      <canvas className={`border-2 border-black ${position === 'horizontally' && ''}`} id='canvas' />
+      <div className={`text-right mt-1 ${confirm && 'flex justify-between'}`}>
+        {confirm && <button className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded' type='button' onClick={confirm}>¡Enviar!</button>}
         <button className='bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded' type='button' onClick={clear}>Limpiar</button>
       </div>
     </div>

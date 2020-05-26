@@ -28,7 +28,7 @@ const Pdf = () => {
   }, [location]);
 
   return (
-    <div className='container mx-auto pt-8'>
+    <div className='container mx-auto pt-8 animated fadeIn'>
       <div className='flex flex-col md:flex-row justify-center text-center space-y-4 md:space-y-0 md:space-x-4'>
         <div>
           <button onClick={() => goTo('manual')} className={`${opcionSelected === 'manual' ? 'bg-blue-700 shadow-outline' : 'bg-blue-500 hover:bg-blue-700 focus:outline-none focus:shadow-outline'}  text-white font-bold py-2 px-4 rounded`} type='button'>

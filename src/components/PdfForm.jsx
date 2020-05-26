@@ -20,6 +20,7 @@ const PdfForm = () => {
       }),
       headers: {
         'Content-Type': 'application/json',
+        credentials: 'include',
       },
     };
     return fetch('http://www.rchdynamic.com.ar/dd/document/create/pdf/pdfToPdf', header)
@@ -27,12 +28,13 @@ const PdfForm = () => {
         return response.json();
       })
       .catch((error) => {
-        Swal.fire('Ramon Chozas S.A', error, 'error');
+        Swal.fire('Ramon Chozas S.A', 'No autorizado', 'error');
         console.log(error);
+        return { status: 401 };
       })
       .then((response) => {
         console.log(response);
-        return response.body.url;
+        return response.status;
       });
   };
 
@@ -47,8 +49,17 @@ const PdfForm = () => {
       onRender: () => {
         send()
           .then((response) => {
-            MySwal.close();
-            history.push(`/home/firmar/${response.split('firmar/')[1]}`);
+            if (response === 201) {
+              Swal.fire({
+                icon: 'success',
+                title: '¡Enviado con éxito!',
+                text: 'Recibirá un mensaje de texto al teléfono que proporcionó con el link para firmar la documentación',
+                onDestroy: () => {
+                  history.push('/home');
+                },
+              });
+            }
+            //history.push(`/home/firmar/${response.split('firmar/')[1]}`);
           });
       },
     });
