@@ -34,7 +34,8 @@ const Template = ({ setTemplate }) => {
   const handleClick = (n) => {
     const galicia = document.getElementById('template0');
     const template2 = document.getElementById('template1');
-    const zurich = document.getElementById('template2');
+    //const zurich = document.getElementById('template2');
+    const zurich = template2;
     switch (n) {
       case 0:
         setTemplate('galicia');
@@ -67,7 +68,7 @@ const Template = ({ setTemplate }) => {
     <main className='w-full h-full pt-8'>
       <h1 className='text-blue-600 text-2xl font-bold text-center'>Seleccione un Template:</h1>
       <div className='flex flex-row items-center'>
-        {dataDOM && dataDOM.body.map((data, index) => {
+        {dataDOM && dataDOM.body.list_html.map((data, index) => {
           const id = index;
           let img;
           if (data === 'galicia.html') {
@@ -76,6 +77,8 @@ const Template = ({ setTemplate }) => {
             img = mailing;
           } else if (data === 'zurich.pdf') {
             img = zurich;
+          } else {
+            return null;
           }
           return (
             <div onClick={(n) => handleClick(id)} key={id} id={`template${id}`} tabIndex={id} role='button' className='w-56 h-full hover:w-64 m-2 border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer' data-template='galicia'>

@@ -31,6 +31,7 @@ const PdfForm = () => {
         console.log(error);
       })
       .then((response) => {
+        console.log(response);
         return response.body.url;
       });
   };

@@ -3,6 +3,7 @@ import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
 import PdfForm from '../components/PdfForm';
 import UploadPdf from '../components/UploadPdf';
 import { animateCSS } from '../funciones';
+import zurich from '../assets/static/zurich.png';
 
 const Pdf = () => {
   const history = useHistory();
@@ -15,6 +16,10 @@ const Pdf = () => {
   const goTo = (path) => {
     history.replace(`/home/pdfs/${path}`);
     animateCSS('.pdf_body', 'fadeIn');
+  };
+
+  const handleTemplate = (e) => {
+    console.log(e.currentTarget);
   };
 
   useEffect(() => {
@@ -37,15 +42,22 @@ const Pdf = () => {
         </div>
       </div>
       <h2 className='text-gray-900 text-lg font-bold mb-2 text-center py-4'>Paso: 1/2</h2>
-      <div className='pdf_body'>
-        <Switch>
-          <Route exact path='/home/pdfs/manual'>
-            <PdfForm />
-          </Route>
-          <Route exact path='/home/pdfs/upload'>
-            <UploadPdf />
-          </Route>
-        </Switch>
+      <div className='grid grid-cols-2'>
+        <div className='grid grid-cols-3'>
+          <button type='button' className='transform duration-200 hover:scale-110 border-2 hover:border-blue-700' onClick={(e) => handleTemplate(e)}>
+            <img className='object-contain' src={zurich} alt='zurich' />
+          </button>
+        </div>
+        <div className='pdf_body'>
+          <Switch>
+            <Route exact path='/home/pdfs/manual'>
+              <PdfForm />
+            </Route>
+            <Route exact path='/home/pdfs/upload'>
+              <UploadPdf />
+            </Route>
+          </Switch>
+        </div>
       </div>
     </div>
   );
