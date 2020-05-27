@@ -20,7 +20,7 @@ const PdfForm = () => {
       }),
       headers: {
         'Content-Type': 'application/json',
-        credentials: 'include'
+        credentials: 'include',
       },
     };
     return fetch('http://www.rchdynamic.com.ar/dd/document/create/pdf/pdfToPdf', header)
@@ -30,9 +30,10 @@ const PdfForm = () => {
       .catch((error) => {
         Swal.fire('Ramon Chozas S.A', 'No autorizado', 'error');
         console.log(error);
-        return {status: 401}
+        return { status: 401 };
       })
       .then((response) => {
+        console.log(response);
         return response.status;
       });
   };
