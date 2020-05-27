@@ -45,7 +45,7 @@ const FormGalicia = ({ template }) => {
 
     setIsDisabled(false);
     const BtnDescarga = document.getElementById('BtnDescarga');
-    BtnDescarga.classList.remove('cursor-not-allowed');
+    BtnDescarga.classList.remove('cursor-not-allowed', 'opacity-50');
 
     const header = { method: 'POST',
       body: JSON.stringify({
@@ -113,7 +113,7 @@ const FormGalicia = ({ template }) => {
           </label>
         </div>
         <div className='flex items-center justify-between'>
-          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-not-allowed' id='BtnDescarga' type='button' disabled={isDisabled}>
+          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-not-allowed opacity-50' id='BtnDescarga' type='button' disabled={isDisabled}>
             Descargar
           </button>
           <button onClick={handleSend} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>

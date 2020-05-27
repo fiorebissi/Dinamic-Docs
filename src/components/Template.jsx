@@ -75,7 +75,7 @@ const Template = ({ setTemplate }) => {
             img = Galicia;
           } else if (data === 'mailing.html') {
             img = mailing;
-          } else if (data === 'zurich.pdf') {
+          } else if (data === 'mailing_firma.html') {
             img = zurich;
           } else {
             return null;
