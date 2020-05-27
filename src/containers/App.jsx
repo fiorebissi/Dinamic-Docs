@@ -3,8 +3,6 @@ import { Switch, Route, HashRouter, Redirect } from 'react-router-dom';
 import ScrollToTop from '../components/ScrollToTop';
 import Login from '../pages/Login';
 import Index from '../pages/Index';
-import FormClientContainer from '../components/FormClientContainer';
-import FileForm from '../components/FileForm';
 import HomeHeader from '../components/HomeHeader';
 import IndexPpal from '../pages/IndexPpal';
 import Pdf from '../pages/Pdf';
@@ -49,20 +47,6 @@ const App = () => {
             </Route>
           </Switch>
         </Route>
-        {/* <Route path='/documentosDinamicos'>
-          <Switch>
-            <Route exact path='/documentosDinamicos/formularioCliente'>
-              <ScrollToTop />
-              <HomeHeader title='Formulario Cliente' />
-              <FormClientContainer />
-            </Route>
-            <Route path='/documentosDinamicos/fileForm'>
-              <ScrollToTop />
-              <HomeHeader title='Formulario Cliente (Csv)' />
-              <FileForm />
-            </Route>
-          </Switch>
-        </Route> */}
       </Switch>
     </HashRouter>
   );

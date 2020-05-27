@@ -91,17 +91,3 @@ const Template = ({ setTemplate }) => {
 
 export default Template;
 
-// {/* <main className='w-full h-full pt-8'>
-//       <h1 className='text-blue-600 text-2xl font-bold text-center'>Seleccione un Template:</h1>
-//       <div className='flex flex-row'>
-//         <div id='galicia' className='tam m-2 border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer' data-template='galicia'>
-//           <img src={Galicia} alt='Galicia Template' />
-//         </div>
-//         <div id='template2' className='tam m-2 border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer' data-template='template2'>
-//           <img src={Template2} alt='Template 2' />
-//         </div>
-//         <div id='template3' className='tam m-2 border-gray-900 hover:border-gray-500 border-2 rounded cursor-pointer' data-template='template3'>
-//           <img src={Template3} alt='Template 3' />
-//         </div>
-//       </div>
-//     </main> */}

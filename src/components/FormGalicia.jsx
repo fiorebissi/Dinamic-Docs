@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 
 const FormGalicia = ({ template }) => {
+  const [isDisabled, setIsDisabled] = useState(true);
+
   const handleDownload = (index, tipoarch) => {
     const header = { method: 'GET',
       headers: {
@@ -40,7 +42,11 @@ const FormGalicia = ({ template }) => {
 
   };
   const handleSend = () => {
-    // const BtnDescarga = document.getElementById('BtnDescarga');
+
+    setIsDisabled(false);
+    const BtnDescarga = document.getElementById('BtnDescarga');
+    BtnDescarga.classList.remove('cursor-not-allowed');
+
     const header = { method: 'POST',
       body: JSON.stringify({
         'name_template': template,
@@ -74,10 +80,6 @@ const FormGalicia = ({ template }) => {
         return 1;
       });
 
-    // if (BtnDescarga.disabled) {
-    //   BtnDescarga.disabled = false;
-    // BtnDescarga.classList.remove('cursor-not-allowed');
-    // }
   };
 
   return (
@@ -111,7 +113,7 @@ const FormGalicia = ({ template }) => {
           </label>
         </div>
         <div className='flex items-center justify-between'>
-          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-not-allowed' id='BtnDescarga' type='button'>
+          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-not-allowed' id='BtnDescarga' type='button' disabled={isDisabled}>
             Descargar
           </button>
           <button onClick={handleSend} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
