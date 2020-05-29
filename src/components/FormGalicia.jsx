@@ -56,8 +56,8 @@ const FormGalicia = ({ template }) => {
       },
       // credentials: 'include',
     };
-    console.log(header);
-    fetch('http://www.rchdynamic.com.ar/dd/document/create/html', header)
+
+    fetch('http://www.rchdynamic.com.ar/dd/document/', header)
       .then((response) => {
         return response.json();
       })
@@ -66,10 +66,18 @@ const FormGalicia = ({ template }) => {
         console.log(error);
       })
       .then((response) => {
+        console.log(response);
         if (response.result !== 'html_created') {
           Swal.fire('Ramon Chozas S.A', response.message, 'error');
           return 0;
         }
+        const url = `data:text/html;base64,${response.body.base64}`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'filename.html';
+        document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+        a.click();
+        a.remove(); //afterwards we remove the element again
         Swal.fire('Ramon Chozas S.A', response.message, 'success');
         return 1;
       });
@@ -111,11 +119,8 @@ const FormGalicia = ({ template }) => {
           </label>
         </div>
         <div className='flex items-center justify-between'>
-          <button onClick={() => handleDownload(1, 'html')} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline cursor-not-allowed' id='BtnDescarga' type='button'>
-            Descargar
-          </button>
           <button onClick={handleSend} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='button'>
-            Enviar
+            Generar Documento Dinamico
           </button>
         </div>
       </form>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
 import FormClientContainer from '../components/FormClientContainer';
 import FileForm from '../components/FileForm';
+import Template from '../components/Template';
 import { animateCSS } from '../funciones';
 
 const Index = () => {
@@ -11,9 +12,10 @@ const Index = () => {
     const path = location.pathname.split('/');
     return path[3];
   });
+  const [template, setTemplate] = useState('galicia');
 
   const goTo = (path) => {
-    history.push(`/home/documentosDinamicos/${path}`);
+    history.replace(`/home/documentosDinamicos/${path}`);
     animateCSS('.form_body', 'fadeIn');
   };
 
@@ -36,15 +38,18 @@ const Index = () => {
           </button>
         </div>
       </div>
-      <div className='form_body'>
-        <Switch>
-          <Route exact path='/home/documentosDinamicos/formClient'>
-            <FormClientContainer />
-          </Route>
-          <Route exact path='/home/documentosDinamicos/fileForm'>
-            <FileForm />
-          </Route>
-        </Switch>
+      <div className='grid grid-cols-2'>
+        <div><Template setTemplate={setTemplate} /></div>
+        <div className='form_body'>
+          <Switch>
+            <Route exact path='/home/documentosDinamicos/formClient'>
+              <FormClientContainer template={template} />
+            </Route>
+            <Route exact path='/home/documentosDinamicos/fileForm'>
+              <FileForm template={template} />
+            </Route>
+          </Switch>
+        </div>
       </div>
 
     </div>

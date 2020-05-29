@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import Template from './Template';
 
-const FileForm = () => {
+const FileForm = ({ template }) => {
 
   const [dataDOM, setDataDOM] = useState(null);
-  const [template, setTemplate] = useState('mailing');
+
   const handleClick = (e) => {
     e.preventDefault();
     const formData = new FormData(document.forms.namedItem('formCsv'));
@@ -13,7 +12,7 @@ const FileForm = () => {
       body: formData,
       // credentials: 'include',
     };
-    fetch(`http://www.rchdynamic.com.ar/dd/document/create/excel/${template}`, miInit)
+    fetch(`http://www.rchdynamic.com.ar/dd/document/excel/${template}`, miInit)
     // fetch('http://localhost:3000/dd/document/create/excel', miInit)
       .then((response) => response.json())
       .catch((error) => console.error('Error:', error))
@@ -23,17 +22,22 @@ const FileForm = () => {
       });
   };
 
-  const handleDownload = (index, tipoarch) => {
+  const handleDownload = (index) => {
     const miInit = {
       method: 'GET',
       // credentials: 'include',
     };
-    fetch(`http://www.rchdynamic.com.ar/dd/document/read/${tipoarch}/${index}`, miInit)
+    fetch(`http://www.rchdynamic.com.ar/dd/document/${index}`, miInit)
     // fetch('http://localhost:3000/dd/document/create/excel', miInit)
-      .then((response) => response.blob())
-      .catch((error) => console.error('Error:', error))
       .then((response) => {
-        const url = window.URL.createObjectURL(response);
+        return response.json();
+      })
+      .catch((error) => {
+        Swal.fire('Ramon Chozas S.A', error, 'error');
+        console.log(error);
+      })
+      .then((response) => {
+        const url = `data:text/html;base64,${response.body.base64}`;
         const a = document.createElement('a');
         a.href = url;
         a.download = 'filename.html';
@@ -73,7 +77,7 @@ const FileForm = () => {
                   <td className='border px-4 py-2'>{email}</td>
                   <td className='border px-4 py-2'>{enterprise}</td>
                   <td className='h-full w-full flex justify-center items-center'>
-                    <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1, 'html')}>Download</button>
+                    <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Download</button>
                   </td>
                 </tr>
               );

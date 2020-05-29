@@ -8,7 +8,6 @@ import { b64toBlob, deviceIs, animateCSS, viewportOrientation } from '../funcion
 import LoaderDualRing from '../components/LoaderDualRing';
 import arrow from '../assets/static/arrow.svg';
 import '../assets/styles/resumePage.css';
-import Modal from '../components/Modal';
 import ModalFirma from '../components/ModalFirma';
 
 const FirmaDigital = () => {
@@ -30,7 +29,7 @@ const FirmaDigital = () => {
         'Content-Type': 'application/json',
       },
     };
-    fetch(`http://www.rchdynamic.com.ar/dd/document/read/pdf/encrypt/${id}`, header)
+    fetch(`http://www.rchdynamic.com.ar/dd/pdf/encrypt/${id}`, header)
       .then((response) => {
         return response.json();
       })
@@ -68,7 +67,7 @@ const FirmaDigital = () => {
 
   const petition = () => {
     //const canvas = resizeCanvas(30, 175);
-    console.log(canvas.toDataURL())
+    console.log(canvas.toDataURL());
     const header = {
       method: 'POST',
       body: JSON.stringify({
@@ -79,15 +78,19 @@ const FirmaDigital = () => {
         'Content-Type': 'application/json',
       },
     };
-    return fetch('http://www.rchdynamic.com.ar/dd/document/create/pdf/sign', header)
+    return fetch('http://www.rchdynamic.com.ar/dd/pdf/sign', header)
       .then((response) => {
         return response.json();
       })
       .catch((error) => {
         Swal.fire('Error al traer el PDF para firmar', error, 'error');
         console.log(error);
+        return { status: 401 };
       })
       .then((response) => {
+        if (response.status && response.status === 401) {
+          return null;
+        }
         return response.body.base64;
       });
   };
@@ -112,33 +115,37 @@ const FirmaDigital = () => {
             petition()
               .then((response) => {
                 MySwal.close();
-                setUrl(window.URL.createObjectURL(b64toBlob(response)));
-                document.querySelector('#link').dispatchEvent(new MouseEvent('click'));
-                Swal.fire({
-                  icon: 'success',
-                  title: 'Ramon Chozas S.A',
-                  showConfirmButton: false,
-                  timer: 2000,
-                  hideClass: {
-                    popup: 'animated fadeOut',
-                  },
-                  onDestroy: () => {
-                    history.push('/home');
-                  },
-                });
+                if (!response) {
+                  Swal.fire('Error al traer el PDF para firmar', error, 'error');
+                } else {
+                  setUrl(window.URL.createObjectURL(b64toBlob(response)));
+                  document.querySelector('#link').dispatchEvent(new MouseEvent('click'));
+                  Swal.fire({
+                    icon: 'success',
+                    title: 'Ramon Chozas S.A',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    hideClass: {
+                      popup: 'animated fadeOut',
+                    },
+                    onDestroy: () => {
+                      history.push('/home');
+                    },
+                  });
+                }
               });
           },
         });
       }
     });
-  }
+  };
 
   const handleCloseModal = () => {
-    animateCSS('.Modal', 'fadeOut faster')
+    animateCSS('.Modal', 'fadeOut faster');
     animateCSS('.Modal__container', 'slideInUp faster', () => {
-      setIsOpen(false)
-    })
-  }
+      setIsOpen(false);
+    });
+  };
 
   return (
     <div className='animated fadeIn py-6'>
@@ -190,24 +197,34 @@ const FirmaDigital = () => {
         </p>
       </div>
 
-      {deviceIs() ===  'desktop' ? (<div className='flex justify-center mt-4'>
-        <div className='max-w-sm w-full h-64'>
-          <Firmar />
+      {deviceIs() === 'desktop' ? (
+        <div className='flex justify-center mt-4'>
+          <div className='max-w-sm w-full h-64'>
+            <Firmar />
+          </div>
         </div>
-      </div>)
-      : (<ModalFirma setIsOpen={setIsOpen} isOpen={isOpen} handleCloseModal={handleCloseModal} confirm={sendFirma} />)}
-      {pdf && <div className='mt-4 text-center'>
-        <button onClick={deviceIs() ===  'desktop' ? sendFirma : () => {
-          if (viewportOrientation() === 'portrait') {
-            Swal.fire({
-              title: 'Debe poner su dispositivo de forma horizontal',
-              icon: 'error',
-            })
-          } else {
-            setIsOpen(true)
-          }
-          }} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>¡Firmar!</button>
-      </div>}
+      ) :
+        (<ModalFirma setIsOpen={setIsOpen} isOpen={isOpen} handleCloseModal={handleCloseModal} confirm={sendFirma} />)}
+      {pdf && (
+        <div className='mt-4 text-center'>
+          <button
+            onClick={deviceIs() === 'desktop' ? sendFirma : () => {
+              if (viewportOrientation() === 'portrait') {
+                Swal.fire({
+                  title: 'Debe poner su dispositivo de forma horizontal',
+                  icon: 'error',
+                });
+              } else {
+                setIsOpen(true);
+              }
+            }}
+            type='button'
+            className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
+          >
+            ¡Firmar!
+          </button>
+        </div>
+      )}
       {url && (
         <div className='text-center hidden'>
           <a id='link' className='underline text-blue-500 hover:text-blue-700' download={`zurich${id}.pdf`} href={url} title='Download pdf document'>hola</a>

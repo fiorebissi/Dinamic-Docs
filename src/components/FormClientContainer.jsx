@@ -1,20 +1,13 @@
-import React, { useState } from 'react';
-import Template from './Template';
-import FormClient from './FormClient';
+import React from 'react';
 import FormGalicia from './FormGalicia';
 
-const FormContainer = () => {
-  const [template, setTemplate] = useState('mailing');
+const FormContainer = ({ template }) => {
   return (
-    <main className='bg-white w-full h-full items-center justify-center content-between'>
+    <div className='bg-white w-full h-full items-center justify-center content-between'>
       <div className='grid-cols-2 sm:grid-cols-1 flex w-full h-full'>
-        <div><Template setTemplate={setTemplate} /></div>
-        {template === 'mailing' ?
-          <div><FormClient template={template} /></div> :
-          <div><FormGalicia template={template} /></div>}
+        <div><FormGalicia template={template} /></div>
       </div>
-    </main>
-
+    </div>
   );
 };
 

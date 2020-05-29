@@ -3,14 +3,15 @@ import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { useHistory } from 'react-router-dom';
 import LoaderDualRing from './LoaderDualRing';
+import { deviceIs } from '../funciones';
 
-const PdfForm = () => {
+const PdfForm = ({ formSelected }) => {
   const history = useHistory();
 
   const send = () => {
     const header = { method: 'POST',
       body: JSON.stringify({
-        'name_template': document.querySelector('#template').value,
+        'name_template': deviceIs() === 'desktop' ? formSelected : document.querySelector('#template').value,
         'variables': {
           firstName: document.getElementById('firstname').value,
           lastName: document.getElementById('lastname').value,
@@ -23,7 +24,7 @@ const PdfForm = () => {
         credentials: 'include',
       },
     };
-    return fetch('http://www.rchdynamic.com.ar/dd/document/create/pdf/pdfToPdf', header)
+    return fetch('http://www.rchdynamic.com.ar/dd/pdf/pdfToPdf', header)
       .then((response) => {
         return response.json();
       })
@@ -67,13 +68,13 @@ const PdfForm = () => {
   };
 
   return (
-    <main className='pt-8 w-full h-full items-center flex flex-col justify-center min-w-full min-h-full animated fadeIn'>
+    <main className='w-full h-full items-center flex flex-col justify-center min-w-full min-h-full animated fadeIn'>
       <form className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4' onSubmit={(e) => handleSubmit(e)}>
-        <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='template'>
+        <label className='block text-gray-700 text-sm font-bold mb-2 lg:hidden' htmlFor='template'>
           Formulario:
-          <select id='template' className='block appearance-none w-full border text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline' required>
+          <select id='template' className='block appearance-none w-full border text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline' required={deviceIs() === 'mobile'}>
             <option value=''>---</option>
-            <option value='zurich'>Zurich</option>
+            <option value='poliza'>poliza</option>
           </select>
         </label>
         <div className='mb-4'>
@@ -95,7 +96,7 @@ const PdfForm = () => {
           </label>
         </div>
         <div className='flex items-center justify-end'>
-          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='submit'>
+          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='submit' disabled={deviceIs() === 'desktop' && !formSelected}>
             Enviar
           </button>
         </div>

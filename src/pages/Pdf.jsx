@@ -12,6 +12,7 @@ const Pdf = () => {
     const path = location.pathname.split('/');
     return path[3];
   });
+  const [formSelected, setFormSelected] = useState(null);
 
   const goTo = (path) => {
     history.replace(`/home/pdfs/${path}`);
@@ -19,7 +20,9 @@ const Pdf = () => {
   };
 
   const handleTemplate = (e) => {
-    console.log(e.currentTarget);
+    setFormSelected(e.currentTarget.id);
+    e.currentTarget.classList.add('scale-110', 'border-blue-700');
+    e.currentTarget.classList.remove('hover:scale-110', 'hover:border-blue-700');
   };
 
   useEffect(() => {
@@ -43,18 +46,18 @@ const Pdf = () => {
       </div>
       <h2 className='text-gray-900 text-lg font-bold mb-2 text-center py-4'>Paso: 1/2</h2>
       <div className='grid grid-cols-2'>
-        <div className='grid grid-cols-3'>
-          <button type='button' className='transform duration-200 hover:scale-110 border-2 hover:border-blue-700' onClick={(e) => handleTemplate(e)}>
-            <img className='object-contain' src={zurich} alt='zurich' />
+        <div className='grid grid-cols-2 gap-4'>
+          <button type='button' id='poliza' className='transform duration-200 hover:scale-110 border-2 hover:border-blue-700 rounded' onClick={(e) => handleTemplate(e)}>
+            <img className='object-contain rounded' src={zurich} alt='zurich' />
           </button>
         </div>
         <div className='pdf_body'>
           <Switch>
             <Route exact path='/home/pdfs/manual'>
-              <PdfForm />
+              <PdfForm formSelected={formSelected} />
             </Route>
             <Route exact path='/home/pdfs/upload'>
-              <UploadPdf />
+              <UploadPdf formSelected={formSelected} />
             </Route>
           </Switch>
         </div>

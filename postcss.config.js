@@ -3,7 +3,7 @@ const tailwindcss = require('tailwindcss');
 const autoprefixer = require('autoprefixer');
 const postcssImport = require('postcss-import');
 const postcssPresetEnv = require('postcss-preset-env');
-const cssMqpacker = require('css-mqpacker');
+const sortMediaQueries = require('postcss-sort-media-queries');
 
 module.exports = {
   plugins: [
@@ -16,7 +16,7 @@ module.exports = {
       stage: 0,
     }),
     tailwindcss,
+    sortMediaQueries,
     autoprefixer,
-    cssMqpacker,
   ],
 };
