@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { useHistory } from 'react-router-dom';
@@ -47,6 +47,7 @@ const PdfForm = ({ formSelected }) => {
         <LoaderDualRing />
       ),
       showConfirmButton: false,
+      allowOutsideClick: false,
       onRender: () => {
         send()
           .then((response) => {
@@ -74,7 +75,7 @@ const PdfForm = ({ formSelected }) => {
           Formulario:
           <select id='template' className='block appearance-none w-full border text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline' required={deviceIs() === 'mobile'}>
             <option value=''>---</option>
-            <option value='poliza'>poliza</option>
+            <option value='poliza'>Poliza</option>
           </select>
         </label>
         <div className='mb-4'>

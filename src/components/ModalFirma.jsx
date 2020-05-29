@@ -8,19 +8,27 @@ const ModalFirma = ({ setIsOpen, isOpen, handleCloseModal, confirm }) => {
   if (isOpen === false) {
     return null;
   }
+
+  const rotate = () => {
+    if (viewportOrientation() === 'portrait') {
+      Swal.fire({
+        title: 'Debe poner su dispositivo de forma horizontal',
+        icon: 'error',
+        onDestroy: () => {
+          window.removeEventListener('resize', rotate);
+          setIsOpen(false);
+        },
+      });
+    }
+  };
+
   useEffect(() => {
-    window.onresize = () => {
-      if (viewportOrientation() === 'portrait') {
-        Swal.fire({
-          title: 'Debe poner su dispositivo de forma horizontal',
-          icon: 'error',
-          onDestroy: () => {
-            setIsOpen(false);
-          },
-        });
-      }
+    window.addEventListener('resize', rotate);
+    return () => {
+      window.removeEventListener('resize', rotate);
     };
   }, []);
+
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal}>
       <div className='h-screen-90 w-screen'>

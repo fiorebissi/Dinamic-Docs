@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
 import PdfForm from '../components/PdfForm';
 import UploadPdf from '../components/UploadPdf';
-import { animateCSS } from '../funciones';
+import { animateCSS, deviceIs } from '../funciones';
 import zurich from '../assets/static/zurich.png';
 
 const Pdf = () => {
@@ -12,7 +12,7 @@ const Pdf = () => {
     const path = location.pathname.split('/');
     return path[3];
   });
-  const [formSelected, setFormSelected] = useState(null);
+  const [formSelected, setFormSelected] = useState('poliza');
 
   const goTo = (path) => {
     history.replace(`/home/pdfs/${path}`);
@@ -30,6 +30,13 @@ const Pdf = () => {
     setOpcionSelected(path[3]);
   }, [location]);
 
+  useEffect(() => {
+    if (deviceIs() === 'desktop') {
+      document.querySelector('#poliza').classList.add('scale-110', 'border-blue-700');
+      document.querySelector('#poliza').classList.remove('hover:scale-110', 'hover:border-blue-700');
+    }
+  });
+
   return (
     <div className='container mx-auto pt-8 animated fadeIn'>
       <div className='flex flex-col md:flex-row justify-center text-center space-y-4 md:space-y-0 md:space-x-4'>
@@ -44,13 +51,14 @@ const Pdf = () => {
           </button>
         </div>
       </div>
-      <h2 className='text-gray-900 text-lg font-bold mb-2 text-center py-4'>Paso: 1/2</h2>
-      <div className='grid grid-cols-2'>
-        <div className='grid grid-cols-2 gap-4'>
-          <button type='button' id='poliza' className='transform duration-200 hover:scale-110 border-2 hover:border-blue-700 rounded' onClick={(e) => handleTemplate(e)}>
-            <img className='object-contain rounded' src={zurich} alt='zurich' />
-          </button>
-        </div>
+      <div className='lg:grid lg:grid-cols-2'>
+        { deviceIs() === 'desktop' && (
+          <div className='grid-cols-2 gap-4 hidden lg:grid'>
+            <button type='button' id='poliza' className='transform duration-200 hover:scale-110 border-2 hover:border-blue-700 rounded' onClick={(e) => handleTemplate(e)}>
+              <img className='object-contain rounded' src={zurich} alt='zurich' />
+            </button>
+          </div>
+        )}
         <div className='pdf_body'>
           <Switch>
             <Route exact path='/home/pdfs/manual'>

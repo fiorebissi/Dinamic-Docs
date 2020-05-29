@@ -2,10 +2,11 @@ import React from 'react';
 import { Switch, Route, HashRouter, Redirect } from 'react-router-dom';
 import ScrollToTop from '../components/ScrollToTop';
 import Login from '../pages/Login';
-import Index from '../pages/Index';
+import Documento from '../pages/Documento';
 import HomeHeader from '../components/HomeHeader';
-import IndexPpal from '../pages/IndexPpal';
+import Index from '../pages/Index';
 import Pdf from '../pages/Pdf';
+import VerFirma from '../pages/VerFirma';
 import FirmaDigital from '../pages/FirmaDigital';
 
 const App = () => {
@@ -28,17 +29,22 @@ const App = () => {
             <Route exact path='/home'>
               <ScrollToTop />
               <HomeHeader title='Home' />
-              <IndexPpal />
+              <Index />
             </Route>
             <Route path='/home/documentosDinamicos'>
               <ScrollToTop />
               <HomeHeader title='Documentos Dinamicos' />
-              <Index />
+              <Documento />
             </Route>
             <Route path='/home/pdfs'>
               <ScrollToTop />
               <HomeHeader title='Pdfs' />
               <Pdf />
+            </Route>
+            <Route exact path='/home/firmar/verFirma'>
+              <ScrollToTop />
+              <HomeHeader title='Ver Firma' />
+              <VerFirma />
             </Route>
             <Route path='/home/firmar/:id'>
               <ScrollToTop />

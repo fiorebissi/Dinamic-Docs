@@ -4,15 +4,15 @@ import { useParams, useHistory } from 'react-router-dom';
 import withReactContent from 'sweetalert2-react-content';
 import { Document, Page } from 'react-pdf/dist/entry.webpack';
 import Firmar from '../components/Firmar';
-import { b64toBlob, deviceIs, animateCSS, viewportOrientation } from '../funciones';
+import { deviceIs, animateCSS, viewportOrientation } from '../funciones';
 import LoaderDualRing from '../components/LoaderDualRing';
 import arrow from '../assets/static/arrow.svg';
+import girar from '../assets/static/rotate.svg';
 import '../assets/styles/resumePage.css';
 import ModalFirma from '../components/ModalFirma';
 
 const FirmaDigital = () => {
   const [pdf, setPdf] = useState(null);
-  const [url, setUrl] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
@@ -29,6 +29,7 @@ const FirmaDigital = () => {
         'Content-Type': 'application/json',
       },
     };
+
     fetch(`http://www.rchdynamic.com.ar/dd/pdf/encrypt/${id}`, header)
       .then((response) => {
         return response.json();
@@ -46,6 +47,19 @@ const FirmaDigital = () => {
         }
       });
   }, []);
+
+  const rotate = () => {
+    if (viewportOrientation() === 'landscape') {
+      Swal.close();
+      setIsOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('resize', rotate);
+    };
+  });
 
   function onDocumentLoadSuccess({ numPages }) {
     setNumPages(numPages);
@@ -67,7 +81,6 @@ const FirmaDigital = () => {
 
   const petition = () => {
     //const canvas = resizeCanvas(30, 175);
-    console.log(canvas.toDataURL());
     const header = {
       method: 'POST',
       body: JSON.stringify({
@@ -91,6 +104,7 @@ const FirmaDigital = () => {
         if (response.status && response.status === 401) {
           return null;
         }
+        console.log(response);
         return response.body.base64;
       });
   };
@@ -98,7 +112,7 @@ const FirmaDigital = () => {
   const sendFirma = () => {
     const MySwal = withReactContent(Swal);
     Swal.fire({
-      title: '¿Enviar Firma?',
+      title: '¿Confirma la Firma?',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Si',
@@ -111,25 +125,21 @@ const FirmaDigital = () => {
             <LoaderDualRing />
           ),
           showConfirmButton: false,
+          allowOutsideClick: false,
           onRender: () => {
             petition()
               .then((response) => {
-                MySwal.close();
                 if (!response) {
                   Swal.fire('Error al traer el PDF para firmar', error, 'error');
                 } else {
-                  setUrl(window.URL.createObjectURL(b64toBlob(response)));
-                  document.querySelector('#link').dispatchEvent(new MouseEvent('click'));
                   Swal.fire({
                     icon: 'success',
                     title: 'Ramon Chozas S.A',
                     showConfirmButton: false,
                     timer: 2000,
-                    hideClass: {
-                      popup: 'animated fadeOut',
-                    },
                     onDestroy: () => {
-                      history.push('/home');
+                      localStorage.setItem('verFirma', response);
+                      history.replace('/home/firmar/verFirma');
                     },
                   });
                 }
@@ -142,14 +152,13 @@ const FirmaDigital = () => {
 
   const handleCloseModal = () => {
     animateCSS('.Modal', 'fadeOut faster');
-    animateCSS('.Modal__container', 'slideInUp faster', () => {
+    animateCSS('.Modal__container', 'slideOutUp faster', () => {
       setIsOpen(false);
     });
   };
 
   return (
     <div className='animated fadeIn py-6'>
-      <h2 className='text-gray-900 text-xl font-bold mb-2 text-center pb-4'>Paso: 2/2</h2>
       <div className='flex flex-col justify-center items-center'>
         <p className='text-center text-gray-700 font-bold text-lg'>
           {pdf && `Pagina ${pageNumber} de ${numPages}`}
@@ -211,9 +220,13 @@ const FirmaDigital = () => {
             onClick={deviceIs() === 'desktop' ? sendFirma : () => {
               if (viewportOrientation() === 'portrait') {
                 Swal.fire({
-                  title: 'Debe poner su dispositivo de forma horizontal',
-                  icon: 'error',
+                  title: 'Debe girar su pantalla',
+                  imageUrl: girar,
+                  imageWidth: 400,
+                  imageHeight: 200,
+                  imageAlt: 'Girrar pantalla',
                 });
+                window.addEventListener('resize', rotate);
               } else {
                 setIsOpen(true);
               }
@@ -223,11 +236,6 @@ const FirmaDigital = () => {
           >
             ¡Firmar!
           </button>
-        </div>
-      )}
-      {url && (
-        <div className='text-center hidden'>
-          <a id='link' className='underline text-blue-500 hover:text-blue-700' download={`zurich${id}.pdf`} href={url} title='Download pdf document'>hola</a>
         </div>
       )}
     </div>
