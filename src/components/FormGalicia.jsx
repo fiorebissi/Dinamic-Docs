@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Swal from 'sweetalert2';
 
 const FormGalicia = ({ template }) => {
+  const [isDisabled, setIsDisabled] = useState(true);
+
   const handleDownload = (index, tipoarch) => {
     const header = { method: 'GET',
       headers: {
@@ -40,7 +42,11 @@ const FormGalicia = ({ template }) => {
 
   };
   const handleSend = () => {
-    // const BtnDescarga = document.getElementById('BtnDescarga');
+
+    setIsDisabled(false);
+    const BtnDescarga = document.getElementById('BtnDescarga');
+    BtnDescarga.classList.remove('cursor-not-allowed', 'opacity-50');
+
     const header = { method: 'POST',
       body: JSON.stringify({
         'name_template': template,
@@ -82,10 +88,6 @@ const FormGalicia = ({ template }) => {
         return 1;
       });
 
-    // if (BtnDescarga.disabled) {
-    //   BtnDescarga.disabled = false;
-    // BtnDescarga.classList.remove('cursor-not-allowed');
-    // }
   };
 
   return (
