@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { fabric } from 'fabric';
-import '../assets/styles/Firmar.css';
 import signDocument from '../assets/static/signDocument.png';
 import arrow from '../assets/static/arrow.svg';
 

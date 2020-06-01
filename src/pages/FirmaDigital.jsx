@@ -9,6 +9,7 @@ import LoaderDualRing from '../components/LoaderDualRing';
 import arrow from '../assets/static/arrow.svg';
 import girar from '../assets/static/rotate.svg';
 import '../assets/styles/resumePage.css';
+import '../assets/styles/FirmaDigital.css';
 import ModalFirma from '../components/ModalFirma';
 
 const FirmaDigital = () => {
@@ -117,6 +118,12 @@ const FirmaDigital = () => {
       showCancelButton: true,
       confirmButtonText: 'Si',
       cancelButtonText: 'No',
+      customClass: {
+        popup: 'popup-class',
+        title: 'title-class',
+        icon: 'icon-class',
+        actions: 'actions-class',
+      },
     }).then((result) => {
       if (result.value) {
         MySwal.fire({
@@ -126,6 +133,10 @@ const FirmaDigital = () => {
           ),
           showConfirmButton: false,
           allowOutsideClick: false,
+          customClass: {
+            popup: 'popup-class',
+            title: 'title-class',
+          },
           onRender: () => {
             petition()
               .then((response) => {
@@ -137,6 +148,11 @@ const FirmaDigital = () => {
                     title: 'Ramon Chozas S.A',
                     showConfirmButton: false,
                     timer: 2000,
+                    customClass: {
+                      popup: 'popup-class',
+                      title: 'title-class',
+                      icon: 'icon-class',
+                    },
                     onDestroy: () => {
                       localStorage.setItem('verFirma', response);
                       history.replace('/home/firmar/verFirma');
@@ -221,6 +237,11 @@ const FirmaDigital = () => {
                   imageWidth: 400,
                   imageHeight: 200,
                   imageAlt: 'Girrar pantalla',
+                  customClass: {
+                    popup: 'popup-class',
+                    title: 'title-class',
+                    image: 'image-class',
+                  },
                 });
                 window.addEventListener('resize', rotate);
               } else {

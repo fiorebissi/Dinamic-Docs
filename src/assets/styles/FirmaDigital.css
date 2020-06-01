@@ -1,0 +1,19 @@
+.popup-class{
+  width:20rem !important;
+}
+
+.title-class{
+  font-size: 1.5rem !important;
+}
+.icon-class{
+  margin: 0 !important;
+  width: 4.5rem !important;
+  height: 4.5rem !important;
+}
+.actions-class{
+  margin: 0.25rem auto 0 !important;
+}
+
+.image-class{
+  object-fit: contain !important;
+}
