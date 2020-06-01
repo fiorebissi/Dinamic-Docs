@@ -1,0 +1,73 @@
+{
+  "name": "base-chozas",
+  "version": "1.0.0",
+  "description": "Whenever I start a new project, I don't know what to write for the first commit. After doing a “git init” there is technically nothing there...",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --config ./webpack.config.js --mode production",
+    "build:dll": "webpack --config ./webpack.dll.config.js --mode production",
+    "dev": "webpack-dev-server  --config  ./webpack.dev.config.js --open --mode development"
+  },
+  "keywords": [],
+  "author": "Ariel Villarreal <arielvillagu@hotmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/core": "^7.10.1",
+    "@babel/preset-env": "^7.10.1",
+    "@babel/preset-react": "^7.10.1",
+    "add-asset-html-webpack-plugin": "^3.1.3",
+    "autoprefixer": "^9.8.0",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "css-loader": "^3.4.2",
+    "eslint": "^7.1.0",
+    "eslint-config-airbnb": "^18.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react-hooks": "^4.0.4",
+    "file-loader": "^6.0.0",
+    "html-critical-webpack-plugin": "^2.1.0",
+    "html-webpack-plugin": "^4.0.4",
+    "image-webpack-loader": "^6.0.0",
+    "mini-css-extract-plugin": "^0.9.0",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
+    "postcss-import": "^12.0.1",
+    "postcss-loader": "^3.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "postcss-sort-media-queries": "^1.5.24",
+    "purgecss-webpack-plugin": "^2.2.0",
+    "style-loader": "^1.1.3",
+    "stylelint": "^13.5.0",
+    "stylelint-config-standard": "^20.0.0",
+    "svg-url-loader": "^6.0.0",
+    "terser-webpack-plugin": "^3.0.2",
+    "url-loader": "^4.1.0",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arielskap/Base-Chozas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arielskap/Base-Chozas/issues"
+  },
+  "homepage": "https://github.com/arielskap/Base-Chozas#readme",
+  "dependencies": {
+    "@tippyjs/react": "^4.0.2",
+    "animate.css": "^3.7.2",
+    "fabric": "^3.6.3",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-pdf": "^4.1.0",
+    "react-router-dom": "^5.2.0",
+    "sweetalert2": "^9.13.3",
+    "sweetalert2-react-content": "^3.0.1",
+    "tailwindcss": "^1.4.6",
+    "tippy.js": "^6.2.3"
+  }
+}
