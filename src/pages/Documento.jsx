@@ -1,21 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { Switch, Route, useHistory, useLocation } from 'react-router-dom';
-import FormGalicia from '../components/FormGalicia';
-import FileForm from '../components/FileForm';
-import Template from '../components/Template';
-import { animateCSS, deviceIs } from '../funciones';
-import Send from '../components/Send';
-import Galicia from '../assets/static/galicia_template.jpg';
+import Swal from 'sweetalert2';
+import FileForm from './FileForm';
+import { animateCSS } from '../funciones';
+import FormClient from './FormClient';
 
 const Documento = () => {
   const history = useHistory();
   const location = useLocation();
-  const [imageTemplate, setImageTemplate] = useState(Galicia);
   const [opSelect, setOpSelect] = useState(() => {
     const path = location.pathname.split('/');
     return path[3];
   });
-  const [template, setTemplate] = useState('galicia');
+  const [templatesData, setTemplatesData] = useState({
+    state: false,
+    body: {
+      list_html: [],
+      list_mailing: [],
+    },
+  });
+
+  useEffect(() => {
+    const miInit = {
+      method: 'GET',
+      // credentials: 'include',
+    };
+    fetch('http://www.rchdynamic.com.ar/dd/template/all', miInit)
+    // fetch('http://localhost:3000/dd/document/create/excel', miInit)
+      .then((response) => response.json())
+      .catch((error) => {
+        console.error('Error:', error);
+        return { type: 'error' };
+      })
+      .then((response) => {
+        if (response.type === 'success') {
+          console.log('Success:', response);
+          setTemplatesData({ ...response, state: true });
+        } else {
+          Swal.fire(
+            'Error',
+            'Hubo problemas al traer los templates',
+            'error',
+          );
+        }
+      });
+  }, []);
 
   const goTo = (path) => {
     history.replace(`/home/documentosDinamicos/${path}`);
@@ -29,7 +58,7 @@ const Documento = () => {
 
   return (
     <div className='container mx-auto pt-8 animated fadeIn'>
-      <div className='flex justify-center text-center space-x-4 px-2'>
+      <div className='flex justify-center text-center space-x-4 px-2 pb-4'>
         <div>
           <button onClick={() => goTo('formClient')} className={`${opSelect === 'formClient' ? 'bg-blue-700  shadow-outline' : 'bg-blue-500 hover:bg-blue-700 focus:outline-none focus:shadow-outline'} text-white font-bold py-2 px-4 rounded`} type='button'>
             Formulario Cliente
@@ -41,21 +70,15 @@ const Documento = () => {
           </button>
         </div>
       </div>
-      <div className='lg:grid lg:grid-cols-2'>
-        { deviceIs() === 'desktop' && <Template setTemplate={setTemplate} imageTemplate={imageTemplate} /> }
-        <div className='form_body'>
-          <Switch>
-            <Route exact path='/home/documentosDinamicos/formClient'>
-              <FormGalicia setImageTemplate={setImageTemplate} template={template} />
-            </Route>
-            <Route exact path='/home/documentosDinamicos/sendMailing'>
-              <Send />
-            </Route>
-            <Route exact path='/home/documentosDinamicos/fileForm'>
-              <FileForm template={template} />
-            </Route>
-          </Switch>
-        </div>
+      <div className='form_body'>
+        <Switch>
+          <Route path='/home/documentosDinamicos/formClient'>
+            <FormClient templates={templatesData} />
+          </Route>
+          <Route path='/home/documentosDinamicos/fileForm'>
+            <FileForm templates={templatesData} />
+          </Route>
+        </Switch>
       </div>
     </div>
   );
