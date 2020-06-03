@@ -4,16 +4,15 @@ import { useHistory } from 'react-router-dom';
 import withReactContent from 'sweetalert2-react-content';
 import { deviceIs } from '../funciones';
 import LoaderDualRing from './LoaderDualRing';
-import mailing from '../assets/static/mailing.png';
 
-const FormGalicia = ({ template, setImageTemplate }) => {
+const FormDD = ({ setDataMailing }) => {
 
   const history = useHistory();
 
   const petition = () => {
     const header = { method: 'POST',
       body: JSON.stringify({
-        'name_template': template,
+        'name_template': 'galicia.html',
         'variables': {
           '{{firstName}}': document.getElementById('firstname').value,
           '{{lastName}}': document.getElementById('lastname').value,
@@ -34,12 +33,10 @@ const FormGalicia = ({ template, setImageTemplate }) => {
       .catch((error) => {
         Swal.fire('Ramon Chozas S.A', error, 'error');
         console.log(error);
+        return { type: 'error' };
       })
       .then((response) => {
         console.log(response);
-        if (response.result !== 'html_created') {
-          return null;
-        }
         return response;
       });
   };
@@ -57,8 +54,10 @@ const FormGalicia = ({ template, setImageTemplate }) => {
       onRender: () => {
         petition()
           .then((response) => {
-            if (!response) {
-              Swal.fire('Error al traer el PDF para firmar', error, 'error');
+            console.log(response);
+            console.log(response.type);
+            if (response.type === 'error') {
+              Swal.fire('Error al generar el Documento Dinamico', response.message, 'error');
             } else {
               Swal.fire('Ramon Chozas S.A', response.message, 'success').then(() => {
                 const url = `data:text/html;base64,${response.body.base64}`;
@@ -79,9 +78,12 @@ const FormGalicia = ({ template, setImageTemplate }) => {
                   allowOutsideClick: false,
                 }).then((resolve) => {
                   if (resolve) {
-                    localStorage.setItem('nombreEnvio', document.getElementById('firstname').value);
-                    localStorage.setItem('apellidoEnvio', document.getElementById('lastname').value);
-                    setImageTemplate(mailing);
+                    setStep(1);
+                    setDataMailing({
+                      send: true,
+                      firstName: document.getElementById('firstname').value,
+                      lastName: document.getElementById('lastname').value,
+                    });
                     history.push('/home/documentosDinamicos/sendMailing');
                   }
                 });
@@ -93,8 +95,8 @@ const FormGalicia = ({ template, setImageTemplate }) => {
   };
 
   return (
-    <main className='pt-8 w-full h-full items-center flex flex-col justify-center min-w-full min-h-full'>
-      <h1 className='text-gray-700 text-xl font-bold capitalize'>{template}</h1>
+    <main className='w-full h-full items-center flex flex-col justify-center min-w-full min-h-full'>
+      <h1 className='text-gray-700 text-xl font-bold capitalize'>Galicia</h1>
       <form onSubmit={(e) => handleSend(e)} className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-4'>
         { deviceIs() === 'mobile' && (
           <label className='block text-gray-700 text-sm font-bold mb-2 lg:hidden' htmlFor='template'>
@@ -135,4 +137,4 @@ const FormGalicia = ({ template, setImageTemplate }) => {
   );
 };
 
-export default FormGalicia;
+export default FormDD;

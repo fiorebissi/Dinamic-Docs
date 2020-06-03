@@ -31,7 +31,7 @@ const ModalFirma = ({ setIsOpen, isOpen, handleCloseModal, confirm }) => {
 
   return (
     <Modal isOpen={isOpen} onClose={handleCloseModal}>
-      <div className='h-screen-90 w-screen'>
+      <div className='h-screen-90 max-w-sm w-screen'>
         <div className='p-4 w-full h-full'>
           <Firmar position='horizontally' confirm={confirm} />
         </div>

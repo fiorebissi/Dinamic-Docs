@@ -98,7 +98,7 @@ const Send = () => {
   };
 
   return (
-    <div className='animated fadeIn px-4 pt-4'>
+    <div className='animated fadeIn px-4'>
       <h1 className='text-gray-700 text-xl font-bold text-center'>Mailing</h1>
       <form onSubmit={(e) => handleCreate(e)} className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-4'>
         <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='email'>
