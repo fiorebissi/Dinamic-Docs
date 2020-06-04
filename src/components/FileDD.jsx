@@ -1,6 +1,6 @@
 import React from 'react';
 
-const FileDD = ({ setDataMailing }) => {
+const FileDD = ({ setDataMailing, templatedSelected }) => {
 
   const handleClick = (e) => {
     e.preventDefault();
@@ -10,7 +10,8 @@ const FileDD = ({ setDataMailing }) => {
       body: formData,
       // credentials: 'include',
     };
-    fetch(`http://www.rchdynamic.com.ar/dd/document/excel/${template}`, miInit)
+    console.log(templatedSelected);
+    fetch(`http://www.rchdynamic.com.ar/dd/document/excel/${templatedSelected.data.name}`, miInit)
     // fetch('http://localhost:3000/dd/document/create/excel', miInit)
       .then((response) => response.json())
       .catch((error) => console.error('Error:', error))

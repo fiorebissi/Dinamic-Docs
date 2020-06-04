@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import LoaderDualRing from './LoaderDualRing';
@@ -96,6 +96,10 @@ const Send = () => {
         return 1;
       });
   };
+
+  useEffect(() => {
+    window.scrollTo(0, document.body.scrollHeight);
+  }, []);
 
   return (
     <div className='animated fadeIn px-4'>

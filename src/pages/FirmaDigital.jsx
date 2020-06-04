@@ -18,7 +18,7 @@ const FirmaDigital = () => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const history = useHistory();
-  const { id } = useParams();
+  const { hash, id } = useParams();
   const canvasSize = useRef({
     height: 0,
     width: 0,
@@ -31,7 +31,7 @@ const FirmaDigital = () => {
       },
     };
 
-    fetch(`http://www.rchdynamic.com.ar/dd/pdf/encrypt/${id}`, header)
+    fetch(`http://www.rchdynamic.com.ar/dd/pdf/encrypt/${hash}/${id}`, header)
       .then((response) => {
         return response.json();
       })

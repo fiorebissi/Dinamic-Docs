@@ -11,6 +11,7 @@ const FileForm = ({ templates }) => {
   });
   const [dataDOM, setDataDOM] = useState(null);
   const [step, setStep] = useState(0);
+  const [templatedSelected, setTemplatedSelected] = useState(null);
 
   const handleDownload = (index) => {
     const miInit = {
@@ -39,10 +40,10 @@ const FileForm = ({ templates }) => {
 
   return (
     <main className='animated fadeIn lg:grid lg:grid-cols-2'>
-      { deviceIs() === 'desktop' && <Template templates={{ ...templates, step }} /> }
+      { deviceIs() === 'desktop' && <Template setTemplatedSelected={setTemplatedSelected} templates={{ ...templates, step }} /> }
       <div className='bg-white w-full h-full flex flex-col justify-center items-center'>
-        <FileDD setStep={setStep} setDataMailing={setDataMailing} />
-        {dataDOM && (
+        <FileDD templatedSelected={templatedSelected} setStep={setStep} setDataMailing={setDataMailing} />
+        {dataDOM && dataDOM.body.count <= 20 ? (
           <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl'>
             <thead>
               <tr>
@@ -72,7 +73,7 @@ const FileForm = ({ templates }) => {
               })}
             </tbody>
           </table>
-        )}
+        ) : dataDOM && <div><p>{`La cantidad de registros es: ${dataDOM.body.count}`}</p></div>}
       </div>
     </main>
 

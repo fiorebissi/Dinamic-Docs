@@ -46,7 +46,7 @@ const App = () => {
               <HomeHeader title='Ver Firma' />
               <VerFirma />
             </Route>
-            <Route path='/home/firmar/:id'>
+            <Route path='/home/firmar/:hash/:id'>
               <ScrollToTop />
               <HomeHeader title='Firmar' />
               <FirmaDigital />

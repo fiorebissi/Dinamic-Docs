@@ -1,23 +1,28 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import Swal from 'sweetalert2';
 import { useHistory } from 'react-router-dom';
 import withReactContent from 'sweetalert2-react-content';
 import { deviceIs } from '../funciones';
 import LoaderDualRing from './LoaderDualRing';
+import LabelInput from './LabelInput';
 
-const FormDD = ({ setDataMailing }) => {
+const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
 
   const history = useHistory();
+  const dataSend = useRef([]);
 
   const petition = () => {
+    templatedSelected.data.variables.forEach((variable) => {
+      const { key, name } = variable;
+      dataSend.current[`${key}`] = document.querySelector(`#${name}`).value;
+    });
+    const data = dataSend.current;
+    console.log(data);
     const header = { method: 'POST',
       body: JSON.stringify({
-        'name_template': 'galicia.html',
+        'name_template': templatedSelected.data.name,
         'variables': {
-          '{{firstName}}': document.getElementById('firstname').value,
-          '{{lastName}}': document.getElementById('lastname').value,
-          '{{gender}}': document.getElementById('gender').value,
-          '{{city}}': document.getElementById('Ciudad').value,
+          ...data,
         },
       }),
       headers: {
@@ -81,10 +86,8 @@ const FormDD = ({ setDataMailing }) => {
                     setStep(1);
                     setDataMailing({
                       send: true,
-                      firstName: document.getElementById('firstname').value,
-                      lastName: document.getElementById('lastname').value,
+                      ...dataSend.current,
                     });
-                    history.push('/home/documentosDinamicos/sendMailing');
                   }
                 });
               });
@@ -95,38 +98,15 @@ const FormDD = ({ setDataMailing }) => {
   };
 
   return (
-    <main className='w-full h-full items-center flex flex-col justify-center min-w-full min-h-full'>
-      <h1 className='text-gray-700 text-xl font-bold capitalize'>Galicia</h1>
+    <main className='w-full h-full items-center flex flex-col justify-center min-w-full min-h-full animated fadeIn'>
+      <h1 className='text-gray-700 text-xl font-bold capitalize'>{templatedSelected.data.name}</h1>
       <form onSubmit={(e) => handleSend(e)} className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-4'>
-        { deviceIs() === 'mobile' && (
-          <label className='block text-gray-700 text-sm font-bold mb-2 lg:hidden' htmlFor='template'>
-            Formulario:
-            <select id='template' className='block appearance-none w-full border text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:shadow-outline' required>
-              <option value=''>---</option>
-              <option value='poliza'>Poliza</option>
-            </select>
-          </label>
-        )}
-        <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='name'>
-          Nombre
-          <input className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='firstname' type='text' placeholder='Nombre' required />
-        </label>
-        <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='lastname'>
-          Apellido
-          <input className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='lastname' type='text' placeholder='Apellido' required />
-        </label>
-        <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='gender'>
-          Genero:
-          <select className='block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500' name='gender' id='gender' required>
-            <option value='o'>---</option>
-            <option value='o'>Masculino</option>
-            <option value='a'>Femenino</option>
-          </select>
-        </label>
-        <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='Ciudad'>
-          Ciudad
-          <input className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='Ciudad' type='text' placeholder='Ciudad' required />
-        </label>
+        {templatedSelected.data && templatedSelected.data.variables.map((variable, index) => {
+          const { id, key, name, type } = variable;
+          return (
+            <LabelInput key={key} type={type} name={name} />
+          );
+        })}
         <div className='flex items-center justify-between'>
           <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='submit'>
             Generar Documento Dinamico

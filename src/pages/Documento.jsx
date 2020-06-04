@@ -25,7 +25,7 @@ const Documento = () => {
       method: 'GET',
       // credentials: 'include',
     };
-    fetch('http://www.rchdynamic.com.ar/dd/template/all', miInit)
+    fetch('http://www.rchdynamic.com.ar/dd/template', miInit)
     // fetch('http://localhost:3000/dd/document/create/excel', miInit)
       .then((response) => response.json())
       .catch((error) => {
@@ -33,8 +33,8 @@ const Documento = () => {
         return { type: 'error' };
       })
       .then((response) => {
+        console.log(response);
         if (response.type === 'success') {
-          console.log('Success:', response);
           setTemplatesData({ ...response, state: true });
         } else {
           Swal.fire(
