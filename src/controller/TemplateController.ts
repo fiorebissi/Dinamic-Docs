@@ -25,7 +25,7 @@ export class TemplateController {
       if (!template) {
         return responseJSON(false, 'template_not_found', 'Template no encontrado', [nameTemplate], 200)
       }
-      const base64PDF = await fs.readFileSync(`${templatesPath}\\${template.route}`, 'base64')
+      const base64PDF = await fs.readFileSync(`${templatesPath}\\${template.nameFile}`, 'base64')
       return responseJSON(true, 'template_sent', 'Template enviado en base64', { base64: base64PDF }, 200)
     } catch (error) {
       return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 200)

@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express'
 import fs from 'fs'
 import path from 'path'
-// import crypto from 'crypto'
+import crypto from 'crypto'
 import { getRepository } from 'typeorm'
 import { Template } from '../entity/Template'
 import { Pdf } from '../entity/Pdf'
@@ -31,7 +31,7 @@ export class PdfController {
 
     const objPdf : Pdf = {
       template: template,
-      author: req.body.jwt_usuario_username,
+      author: 'req.body.jwt_usuario_username',
       count: 1,
       isStatus: true,
       createtAt: new Date(
@@ -55,9 +55,8 @@ export class PdfController {
 
   async setTextInPdf (req: Request, res: Response) {
     const { variables, name_template: nameTemplate } = req.body
-    // const cryptoId = crypto.createHmac('sha256', secret).update(`${id}`).digest('hex')
 
-    if (!variables || !nameTemplate) {
+    if (!variables || !nameTemplate || !process.env.SECRET_CRYPTO) {
       return responseJSON(false, 'parameters_missing', 'Falta nombre de pdf', ['variables', 'name_template'])
     }
 
@@ -69,10 +68,12 @@ export class PdfController {
       return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate])
     }
 
+    const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${template.id}`).digest('hex')
+    console.log(cryptoId)
     const objPdf : Pdf = {
       template: template,
       count: 1,
-      author: req.body.jwt_usuario_username,
+      author: 'req.body.jwt_usuario_username',
       isStatus: true,
       createtAt: new Date(
         new Date().toLocaleString('es-AR', {
@@ -175,7 +176,7 @@ export class PdfController {
     }
     const objPdf : Pdf = {
       template: template,
-      author: req.body.jwt_usuario_username,
+      author: 'req.body.jwt_usuario_username',
       count: 1,
       isStatus: true,
       createtAt: new Date(
@@ -209,8 +210,6 @@ export class PdfController {
         return responseJSON(false, 'pdf_not_exist', 'Pdf not exist', [], 200)
       }
 
-      if (pdf.type === 'many') {
-      }
       const base64PDF = await fs.readFileSync(`${uploadsPath}\\pdf_generated\\${pdf.id}.html`, 'base64')
       return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64PDF }, 200)
     } catch (error) {
@@ -233,8 +232,6 @@ export class PdfController {
         return responseJSON(false, 'pdf_not_exist', 'Pdf not exist', [], 200)
       }
 
-      if (pdf.type === 'many') {
-      }
       const base64PDF = await fs.readFileSync(`${uploadsPath}\\pdf_generated\\${pdf.id}.html`, 'base64')
       return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64PDF }, 200)
     } catch (error) {

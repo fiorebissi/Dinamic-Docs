@@ -15,11 +15,6 @@ export class Document {
     @ManyToOne(type => Template)
     template!: Template;
 
-    @Column('varchar', { length: 10 })
-    @Length(1, 9)
-    @IsOptional()
-    type?: string;
-
     @Column('varchar', { length: 50 })
     @Min(1)
     @IsOptional()

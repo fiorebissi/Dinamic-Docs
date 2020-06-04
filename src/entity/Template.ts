@@ -20,7 +20,7 @@ export class Template {
   @Column('varchar', { length: 50 })
   @Length(1, 49)
   @IsOptional()
-  route?: string;
+  nameFile?: string;
 
   @Column('varchar', { length: 250 })
   @Length(1, 250)

@@ -29,7 +29,7 @@ export class MailingController {
 
     const objMailing : Mailing = {
       template: template,
-      author: req.body.jwt_usuario_username,
+      author: 'req.body.jwt_usuario_username',
       count: 1,
       isStatus: true,
       createtAt: new Date(
@@ -67,7 +67,7 @@ export class MailingController {
 
     const objMailing : Mailing = {
       template: template,
-      author: req.body.jwt_usuario_username,
+      author: 'req.body.jwt_usuario_username',
       count: 1,
       isStatus: true,
       createtAt: new Date(

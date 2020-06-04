@@ -24,12 +24,12 @@ export class DocumentController {
       .getOne()
 
     if (!template) {
-      return responseJSON(false, 'template_not_found', 'Template not found', [nameTemplate], 200)
+      return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate], 200)
     }
 
     const objDocument : Document = {
       template: template,
-      author: req.body.jwt_usuario_username,
+      author: 'req.body.jwt_usuario_username',
       count: 1,
       isStatus: true,
       createtAt: new Date(
@@ -41,7 +41,7 @@ export class DocumentController {
     try {
       const newDocument = await getRepository(Document).save(objDocument)
       const document = `${uploadsPath}\\html_generated\\${newDocument.id}.html`
-      const dataTemplate = await fs.readFileSync(`${templatesPath}\\${template.route}`, 'utf8')
+      const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
       const htmlOK = await createDocument(document, dataTemplate, variables)
 
       if (!htmlOK) {
@@ -50,6 +50,7 @@ export class DocumentController {
 
       return responseJSON(true, 'html_created', 'HTML created', { base64: htmlOK }, 201)
     } catch (error) {
+      console.info(error.message)
       return responseJSON(false, 'template_not_found', `Template '${nameTemplate}' no encontrado`, [], 200)
     }
   }
@@ -98,8 +99,6 @@ export class DocumentController {
         return responseJSON(false, 'document_not_exist', 'Document not exist', [], 200)
       }
 
-      if (document.type === 'many') {
-      }
       const base64PDF = await fs.readFileSync(`${uploadsPath}\\html_generated\\${document.id}.html`, 'base64')
       return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64PDF }, 200)
     } catch (error) {
