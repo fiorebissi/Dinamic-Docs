@@ -68,8 +68,6 @@ export class PdfController {
       return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate])
     }
 
-    const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${template.id}`).digest('hex')
-    console.log(cryptoId)
     const objPdf : Pdf = {
       template: template,
       count: 1,
@@ -83,6 +81,7 @@ export class PdfController {
     }
     try {
       const newPdf = await getRepository(Pdf).save(objPdf)
+      const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${newPdf.id}`).digest('hex')
 
       const pathPDF = `${uploadsPath}\\pdf_generated\\${newPdf.id}.pdf`
       const template = await fs.readFileSync(`${templatesPath}\\pdf\\${nameTemplate}.pdf`)
@@ -93,10 +92,10 @@ export class PdfController {
           objs = await setTextPoliza(variables)
           break
           /*
-        case 'recibo':
-          objs = await setTextPoliza(variables)
-          break
-          */
+          case 'recibo':
+            objs = await setTextPoliza(variables)
+            break
+            */
       }
 
       if (!objs) {
@@ -120,7 +119,7 @@ export class PdfController {
       if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
         return responseJSON(true, 'pdf_created', 'No se puedo enviar el mensaje. Credenciales no definidas', [], 200)
       }
-      const textSMS = `Hola ${objGeneric.firstName} ${objGeneric.lastName}. Ingresa a la siguiente URL para firmar el documento http://www.dynamicdoc.com.ar/generar/#/home/firmar/${newPdf.id}`
+      const textSMS = `Hola ${objGeneric.firstName} ${objGeneric.lastName}. Ingresa a la siguiente URL para firmar el documento http://www.dynamicdoc.com.ar/generar/#/home/firmar/${cryptoId}/${newPdf.id}`
       const resultSMS : any = await sendSmsGET(objGeneric.phone, textSMS, process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)
 
       return responseJSON(true, 'pdf_created', 'Mensaje enviado', { id: newPdf.id, result_message: resultSMS[0] }, 201)
@@ -168,7 +167,7 @@ export class PdfController {
       return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['file', 'sign'])
     }
     const template = await getRepository(Template).createQueryBuilder('template')
-      .where('template.name = :arg_name', { arg_name: nameTemplate })
+      .where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
       .getOne()
 
     if (!template) {
@@ -196,46 +195,30 @@ export class PdfController {
     }
   }
 
-  async read (req: Request, res: Response) {
-    const { id } = req.params
-    if (!parseInt(id)) {
-      return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id'], 200)
-    }
-    try {
-      const pdf = await getRepository(Pdf).createQueryBuilder('pdf')
-        .where('pdf.isStatus = true AND pdf.id = :arg_id', { arg_id: id })
-        .getOne()
-
-      if (!pdf) {
-        return responseJSON(false, 'pdf_not_exist', 'Pdf not exist', [], 200)
-      }
-
-      const base64PDF = await fs.readFileSync(`${uploadsPath}\\pdf_generated\\${pdf.id}.html`, 'base64')
-      return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64PDF }, 200)
-    } catch (error) {
-      return responseJSON(false, 'pdf_not_found', 'Pdf not found', [], 200)
-    }
-  }
-
   async readEncrypt (req: Request, res: Response) {
-    const { encryptedid: encryptedId } = req.params
-    if (!parseInt(encryptedId)) {
-      return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id'], 200)
+    const { encrypt_req: encryptReq, id } = req.params
+
+    if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO) {
+      return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypt_req'], 200)
+    }
+    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${id}`).digest('hex')
+
+    if (encryptReq !== encryptServer) {
+      return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
     }
     try {
-      const id = encryptedId
       const pdf = await getRepository(Pdf).createQueryBuilder('pdf')
         .where('pdf.isStatus = true AND pdf.id = :arg_id', { arg_id: id })
         .getOne()
 
       if (!pdf) {
-        return responseJSON(false, 'pdf_not_exist', 'Pdf not exist', [], 200)
+        return responseJSON(false, 'pdf_not_exist', 'Pdf no existe', [], 200)
       }
 
-      const base64PDF = await fs.readFileSync(`${uploadsPath}\\pdf_generated\\${pdf.id}.html`, 'base64')
-      return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64PDF }, 200)
+      const base64PDF = await fs.readFileSync(`${uploadsPath}\\pdf_generated\\${pdf.id}.pdf`, 'base64')
+      return responseJSON(true, 'pdf_sent', 'PDf enviado', { base64: base64PDF }, 200)
     } catch (error) {
-      return responseJSON(false, 'pdf_not_found', 'Pdf not found', [], 200)
+      return responseJSON(false, 'pdf_not_found', 'Pdf no encontrado en el servidor', [], 200)
     }
   }
 }

@@ -20,7 +20,7 @@ export class MailingController {
     }
 
     const template = await getRepository(Template).createQueryBuilder('template')
-      .where('template.name = :arg_name', { arg_name: nameTemplate })
+      .where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
       .getOne()
 
     if (!template) {

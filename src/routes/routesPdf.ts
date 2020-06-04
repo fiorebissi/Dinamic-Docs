@@ -21,13 +21,7 @@ export const routesPdf = [
   },
   {
     method: 'get',
-    route: '/pdf/:id',
-    controller: PdfController,
-    action: 'read'
-  },
-  {
-    method: 'get',
-    route: '/pdf/encrypt/:encrypted_id',
+    route: '/pdf/encrypt/:encrypt_req/:id',
     controller: PdfController,
     action: 'readEncrypt'
   }
