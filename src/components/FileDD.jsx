@@ -19,31 +19,38 @@ const FileDD = ({ setDataMailing, templatedSelected, setDataDOM }) => {
     // fetch('http://localhost:3000/dd/document/create/excel', miInit)
       .then((response) => response.json())
       .catch((error) => {
-        Swal.fire('Ramon Chozas S.A', error, 'error');
         console.log(error);
-        return { type: 'error' };
+        return { ...error, type: 'error' };
       })
       .then((response) => {
-        Swal.fire({
-          title: 'Ramon Chozas S.A',
-          text: 'Datos Cargados y Generados',
-          icon: 'success',
-          showCancelButton: true,
-          confirmButtonColor: '#007ace',
-          cancelButtonColor: '#d33',
-          cancelButtonText: 'Cerrar',
-          confirmButtonText: 'Enviar Documentos Dinamicos',
-        }).then((result) => {
-          if (result.value) {
-            Swal.fire(
-              'Ramon Chozas S.A',
-              'Enviados',
-              'success',
-            );
-          }
-        });
-        console.log('Success:', response);
-        setDataDOM(response);
+        console.log(response);
+        if (response.type === 'error') {
+          Swal.fire(
+            'Ramon Chozas S.A',
+            response.message,
+            'error',
+          );
+        } else {
+          Swal.fire({
+            title: 'Ramon Chozas S.A',
+            text: 'Datos Cargados y Generados',
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonColor: '#007ace',
+            cancelButtonColor: '#d33',
+            cancelButtonText: 'Cerrar',
+            confirmButtonText: 'Enviar Documentos Dinamicos',
+          }).then((result) => {
+            if (result.value) {
+              Swal.fire(
+                'Ramon Chozas S.A',
+                'Enviados',
+                'success',
+              );
+            }
+          });
+          setDataDOM(response);
+        }
         // Swal.fire({
         //   icon: 'question',
         //   title: '¿Le gustaría enviarlo por mail?',
