@@ -2,12 +2,14 @@
 import { Request, Response, NextFunction } from 'express'
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 import { getRepository } from 'typeorm'
 import { Template } from '../entity/Template'
 import { Mailing } from '../entity/Mailing'
 import { createDocument } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { sendMailExternal } from '../utils/mail'
+import { Document } from '../entity/Document'
 const templatePath = path.join(__dirname, '..\\resource\\template\\')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads\\')
 
@@ -15,7 +17,7 @@ export class MailingController {
   async create (req : Request, res: Response) {
     const { to, name_template: nameTemplate, variables } = req.body
 
-    if (!to || !nameTemplate || !variables) {
+    if (!to || !nameTemplate || !variables || !process.env.SECRET_CRYPTO) {
       return responseJSON(false, 'missing_parameters', 'Missing Parameters', ['to', 'name_template', 'viriables'])
     }
 
@@ -40,6 +42,8 @@ export class MailingController {
     }
     try {
       const newMailing = await getRepository(Mailing).save(objMailing)
+      const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${newMailing.id}`).digest('hex')
+      variables['{{cryptoURL}}'] = `${cryptoId}/${newMailing.id}`
       const document = `${uploadsPath}\\mailing_generated\\${newMailing.id}.html`
       const template = await fs.readFileSync(`${templatePath}\\mailing\\${nameTemplate}.html`, 'utf8')
       const htmlBases64 = await createDocument(document, template, variables)
@@ -51,10 +55,10 @@ export class MailingController {
   }
 
   async createAndSend (req : Request, res: Response) {
-    const { to, name_template: nameTemplate, variables } = req.body
+    const { to, name_template: nameTemplate, document_id: documentID, variables } = req.body
 
-    if (!to || !nameTemplate || !variables) {
-      return responseJSON(false, 'missing_parameters', 'Missing Parameters', ['to', 'name_template', 'viriables'])
+    if (!to || !nameTemplate || !variables || !documentID || !process.env.SECRET_CRYPTO_DOC) {
+      return responseJSON(false, 'missing_parameters', 'Missing Parameters', ['to', 'name_template', 'viriables', 'document_id'])
     }
 
     const template = await getRepository(Template).createQueryBuilder('template')
@@ -62,7 +66,15 @@ export class MailingController {
       .getOne()
 
     if (!template) {
-      return responseJSON(false, 'template_not_exist', 'Template not exist', [nameTemplate])
+      return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate])
+    }
+
+    const document = await getRepository(Document).createQueryBuilder('document')
+      .where('document.id = :arg_id', { arg_id: documentID })
+      .getOne()
+
+    if (!document) {
+      return responseJSON(false, 'document_not_exist', 'Documento no existe', [documentID])
     }
 
     const objMailing : Mailing = {
@@ -78,9 +90,11 @@ export class MailingController {
     }
     try {
       const newMailing = await getRepository(Mailing).save(objMailing)
-      const document = `${uploadsPath}\\mailing_generated\\${newMailing.id}.html`
+      const mailing = `${uploadsPath}\\mailing_generated\\${newMailing.id}.html`
+      const cryptoID = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
+      variables['{{cryptoURL}}'] = `${cryptoID}/${document.id}`
       const template = await fs.readFileSync(`${templatePath}\\mailing\\${nameTemplate}.html`, 'utf8')
-      const htmlBases64 = await createDocument(document, template, variables)
+      const htmlBases64 = await createDocument(mailing, template, variables)
       const resultMail = await sendMailExternal('Probando de Probando', to, Buffer.from(htmlBases64, 'base64').toString('utf8'))
 
       return responseJSON(true, 'mailing_created', 'Mailing created', { id: objMailing.id, result_mail: resultMail, base64: htmlBases64 }, 201)

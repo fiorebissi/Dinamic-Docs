@@ -41,7 +41,7 @@ export class DocumentController {
     }
     try {
       const newDocument = await getRepository(Document).save(objDocument)
-      const document = `${uploadsPath}\\html_generated\\${newDocument.id}.html`
+      const document = `${uploadsPath}\\document_generated\\${newDocument.id}.html`
       const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
       const htmlOK = await createDocument(document, dataTemplate, variables)
 
@@ -49,7 +49,7 @@ export class DocumentController {
         return responseJSON(false, 'error_internal', 'Error in variables', [], 200)
       }
 
-      return responseJSON(true, 'html_created', 'HTML created', { base64: htmlOK }, 201)
+      return responseJSON(true, 'html_created', 'HTML creado', { id: newDocument.id, base64: htmlOK }, 201)
     } catch (error) {
       return responseJSON(false, 'template_not_found', `Template '${nameTemplate}' no encontrado`, [], 200)
     }
@@ -76,7 +76,7 @@ export class DocumentController {
             '{{email}}': item.email,
             '{{enterprise}}': item.enterprise
           }
-          await createDocument(`${uploadsPath}\\html_generated\\${i}.html`, bufferTemplate, variables)
+          await createDocument(`${uploadsPath}\\document_generated\\${i}.html`, bufferTemplate, variables)
         }
         return responseJSON(true, 'html_generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: i }, 200)
       }).catch(error => responseJSON(false, error.result, error.message, [], 200))
@@ -99,20 +99,20 @@ export class DocumentController {
         return responseJSON(false, 'document_not_exist', 'Document not exist', [], 200)
       }
 
-      const base64document = await fs.readFileSync(`${uploadsPath}\\html_generated\\${document.id}.html`, 'base64')
+      const base64document = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'base64')
       return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64document }, 200)
     } catch (error) {
       return responseJSON(false, 'document_not_found', 'Document not found', [], 200)
     }
   }
 
-  async readEncrypt (req: Request, res: Response) {
+  async readEncrypt (req: Request, res: Response, next : NextFunction) {
     const { encrypt_req: encryptReq, id } = req.params
 
-    if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO) {
+    if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO_DOC) {
       return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypt_req'], 200)
     }
-    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${id}`).digest('hex')
+    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${id}`).digest('hex')
 
     if (encryptReq !== encryptServer) {
       return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
@@ -126,10 +126,13 @@ export class DocumentController {
         return responseJSON(false, 'document_not_exist', 'Documento no existe', [], 200)
       }
 
-      const base64Document = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.document`, 'base64')
-      return responseJSON(true, 'document_sent', 'document enviado', { base64: base64Document }, 200)
+      const fileDocument = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'utf8')
+      res.send(fileDocument)
+      // const base64Document = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.document`, 'base64')
+      // return responseJSON(true, 'document_sent', 'document enviado', { base64: base64Document }, 200)
     } catch (error) {
-      return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 200)
+      console.log(error.message)
+      return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
     }
   }
 }

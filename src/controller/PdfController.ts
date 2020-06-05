@@ -56,7 +56,7 @@ export class PdfController {
   async setTextInPdf (req: Request, res: Response) {
     const { variables, name_template: nameTemplate } = req.body
 
-    if (!variables || !nameTemplate || !process.env.SECRET_CRYPTO) {
+    if (!variables || !nameTemplate || !process.env.SECRET_CRYPTO_PDF) {
       return responseJSON(false, 'parameters_missing', 'Falta nombre de pdf', ['variables', 'name_template'])
     }
 
@@ -81,7 +81,7 @@ export class PdfController {
     }
     try {
       const newPdf = await getRepository(Pdf).save(objPdf)
-      const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${newPdf.id}`).digest('hex')
+      const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${newPdf.id}`).digest('hex')
 
       const pathPDF = `${uploadsPath}\\pdf_generated\\${newPdf.id}.pdf`
       const template = await fs.readFileSync(`${templatesPath}\\pdf\\${nameTemplate}.pdf`)
@@ -131,11 +131,11 @@ export class PdfController {
   async setPngInPdf (req: Request, res: Response) {
     const { encrypt_req: encryptReq, id, sign } = req.body
 
-    if (!encryptReq || !id || !sign || !process.env.SECRET_CRYPTO) {
+    if (!encryptReq || !id || !sign || !process.env.SECRET_CRYPTO_PDF) {
       return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['encrypt_req', 'sign', 'id'])
     }
 
-    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${id}`).digest('hex')
+    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${id}`).digest('hex')
 
     if (encryptReq !== encryptServer) {
       return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
@@ -203,10 +203,10 @@ export class PdfController {
   async readEncrypt (req: Request, res: Response) {
     const { encrypt_req: encryptReq, id } = req.params
 
-    if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO) {
+    if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO_PDF) {
       return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypt_req'], 200)
     }
-    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${id}`).digest('hex')
+    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${id}`).digest('hex')
 
     if (encryptReq !== encryptServer) {
       return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)

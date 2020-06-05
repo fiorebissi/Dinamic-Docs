@@ -21,7 +21,7 @@ export const routesDocument = [
   },
   {
     method: 'get',
-    route: '/document/encrypt/:encrypted_id',
+    route: '/document/encrypt/:encrypt_req/:id',
     controller: DocumentController,
     action: 'readEncrypt'
   }
