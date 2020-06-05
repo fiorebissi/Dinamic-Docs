@@ -71,37 +71,47 @@ const FileForm = ({ templates }) => {
         <div className='bg-white w-full h-full flex flex-col justify-center items-center'>
           <FileDD templatedSelected={templatedSelected} setDataDOM={setDataDOM} setStep={setStep} setDataMailing={setDataMailing} />
           {dataDOM && dataDOM.body.count <= 20 ? (
-            <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl pt-8'>
-              <thead>
-                <tr>
-                  <th className='px-4 py-2'> </th>
-                  <th className='px-4 py-2'>Nombre</th>
-                  <th className='px-4 py-2'>Apellido</th>
-                  <th className='px-4 py-2'>Email</th>
-                  <th className='px-4 py-2'>Empresa</th>
-                  <th className='px-4 py-2 font-bold'>Descargar</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dataDOM.body.list_user.map((data, index) => {
-                  const { firstName, lastName, email, enterprise } = data;
-                  console.log(data);
-                  const id = index;
-                  return (
-                    <tr key={id}>
-                      <td className='border px-4 py-2'><input className='mr-2 leading-tight' type='checkbox' /></td>
-                      <td className='border px-4 py-2'>{firstName}</td>
-                      <td className='border px-4 py-2'>{lastName}</td>
-                      <td className='border px-4 py-2'>{email}</td>
-                      <td className='border px-4 py-2'>{enterprise}</td>
-                      <td className='h-full w-full flex justify-center items-center'>
-                        <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Enviar</button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div>
+              <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl pt-8'>
+                <thead>
+                  <tr>
+                    <th className='px-4 py-2'> </th>
+                    <th className='px-4 py-2'>Nombre</th>
+                    <th className='px-4 py-2'>Apellido</th>
+                    <th className='px-4 py-2'>Email</th>
+                    <th className='px-4 py-2'>Empresa</th>
+                    <th className='px-4 py-2 font-bold'>Descargar</th>
+                    <th className='px-4 py-2 font-bold'>Enviar Mail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {dataDOM.body.list_user.map((data, index) => {
+                    const { firstName, lastName, email, enterprise } = data;
+                    console.log(data);
+                    const id = index;
+                    return (
+                      <tr key={id}>
+                        <td className='border px-4 py-2'><input className='mr-2 leading-tight' type='checkbox' /></td>
+                        <td className='border px-4 py-2'>{firstName}</td>
+                        <td className='border px-4 py-2'>{lastName}</td>
+                        <td className='border px-4 py-2'>{email}</td>
+                        <td className='border px-4 py-2'>{enterprise}</td>
+                        <td className='border px-4 py-2'>
+                          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar</button>
+                        </td>
+                        <td className='border px-4 py-2'>
+                          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Enviar Mail</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              <div className='flex p-4'>
+                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-3' type='button' onClick={() => handleDownload(id + 1)}>Generar Todos</button>
+                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar Seleccionados</button>
+              </div>
+            </div>
           ) : dataDOM && <div><p>{`La cantidad de registros es: ${dataDOM.body.count}`}</p></div>}
         </div>
       </div>
