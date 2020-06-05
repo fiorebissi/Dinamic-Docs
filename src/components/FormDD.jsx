@@ -1,14 +1,11 @@
 import React, { useRef } from 'react';
 import Swal from 'sweetalert2';
-import { useHistory } from 'react-router-dom';
 import withReactContent from 'sweetalert2-react-content';
 import { deviceIs } from '../funciones';
 import LoaderDualRing from './LoaderDualRing';
 import LabelInput from './LabelInput';
 
 const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
-
-  const history = useHistory();
   const dataSend = useRef([]);
 
   const petition = () => {
@@ -82,7 +79,7 @@ const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
                   reverseButtons: true,
                   allowOutsideClick: false,
                 }).then((resolve) => {
-                  if (resolve) {
+                  if (resolve.isConfirmed) {
                     setStep(1);
                     setDataMailing({
                       send: true,

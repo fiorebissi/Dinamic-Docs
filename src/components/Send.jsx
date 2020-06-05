@@ -2,20 +2,32 @@ import React, { useState, useRef, useEffect } from 'react';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import LoaderDualRing from './LoaderDualRing';
+import LabelInput from './LabelInput';
 
-const Send = () => {
+const Send = ({ dataMailing, mailingSelected }) => {
   const [isDisabled, setIsDisabled] = useState(true);
   const id = useRef(null);
+
   const petition = () => {
+    const data = [];
+    mailingSelected.variables.forEach((variable) => {
+      const { key, name } = variable;
+      const flag = Object.keys(dataMailing).some((data) => {
+        return key === data;
+      });
+      if (flag) {
+        data[`${key}`] = dataMailing[key];
+      } else {
+        data[`${key}`] = document.querySelector(`#${name}`).value;
+      }
+    });
+
     const header = { method: 'POST',
       body: JSON.stringify({
-        'name_template': 'mailing',
+        'name_template': mailingSelected.name,
         'to': document.getElementById('email').value,
         'variables': {
-          '{{firstName}}': localStorage.getItem('nombreEnvio'),
-          '{{lastName}}': localStorage.getItem('apellidoEnvio'),
-          '{{email}}': document.getElementById('email').value,
-          '{{enterprise}}': document.getElementById('enterprise').value,
+          ...data,
         },
       }),
       headers: {
@@ -31,13 +43,10 @@ const Send = () => {
       .catch((error) => {
         Swal.fire('Ramon Chozas S.A', error, 'error');
         console.log(error);
-        return { status: 401 };
+        return { type: 'error' };
       })
       .then((response) => {
         console.log(response);
-        if (response.status && response.status === 401) {
-          return null;
-        }
         return response;
       });
   };
@@ -55,10 +64,12 @@ const Send = () => {
       onRender: () => {
         petition()
           .then((response) => {
-            if (response) {
+            if (response.type === 'success') {
               Swal.fire('Ramon Chozas S.A', 'Mailing creado con exito!', 'success');
               setIsDisabled(false);
-              id.current = response.body._id;
+              id.current = response.body.id;
+            } else {
+              Swal.fire('Ramon Chozas S.A', response.message, 'error');
             }
           });
       },
@@ -66,7 +77,7 @@ const Send = () => {
   };
 
   const enviar = () => {
-    console.log('hola');
+
     const header = { method: 'POST',
       body: JSON.stringify({
         'id': id.current,
@@ -83,16 +94,16 @@ const Send = () => {
         return response.json();
       })
       .catch((error) => {
-        Swal.fire('Ramon Chozas S.A', error, 'error');
         console.log(error);
-        return { status: 401 };
+        return { type: 'error' };
       })
       .then((response) => {
         console.log(response);
-        if (response.status && response.status === 401) {
-          return null;
+        if (response.type === 'error') {
+          Swal.fire('Ramon Chozas S.A', response.message, 'error');
+        } else {
+          Swal.fire('Ramon Chozas S.A', 'Mailing enviado con exito!', 'success');
         }
-        Swal.fire('Ramon Chozas S.A', 'Mailing enviado con exito!', 'success');
         return 1;
       });
   };
@@ -103,21 +114,25 @@ const Send = () => {
 
   return (
     <div className='animated fadeIn px-4'>
-      <h1 className='text-gray-700 text-xl font-bold text-center'>Mailing</h1>
+      <h1 className='text-gray-700 text-xl font-bold text-center'>{mailingSelected.name}</h1>
       <form onSubmit={(e) => handleCreate(e)} className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-4'>
-        <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='email'>
-          Email
-          <input className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='email' type='email' placeholder='Email' required />
-        </label>
-        <label className='block text-gray-700 text-sm font-bold mb-2' htmlFor='enterprise'>
-          Empresa
-          <input className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline' id='enterprise' type='text' placeholder='Empresa' required />
-        </label>
+        { mailingSelected.variables.map((variable, index) => {
+          const { id, key, name, type } = variable;
+          const flag = Object.keys(dataMailing).some((data) => {
+            return key === data;
+          });
+          if (flag) {
+            return null;
+          }
+          return (
+            <LabelInput key={key} type={type} name={name} />
+          );
+        })}
         <div className='flex flex-col justify-between space-y-4'>
           <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' type='submit' disabled={!isDisabled}>
             Crear Mailing
           </button>
-          <button onClick={() => enviar()} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' disabled={isDisabled}>
+          <button onClick={enviar} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' disabled={isDisabled}>
             Enviar Mailing
           </button>
         </div>

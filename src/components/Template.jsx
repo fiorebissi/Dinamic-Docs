@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import '../assets/styles/template.css';
 import LoaderDualRing from './LoaderDualRing';
 
-const Template = ({ templates, setTemplatedSelected }) => {
+const Template = ({ templates, setTemplatedSelected, setMailingSelected }) => {
   const [dataTemplates, setDataTemplates] = useState(null);
   const step = useRef(templates.step);
   const handleClick = (e) => {
@@ -15,16 +15,23 @@ const Template = ({ templates, setTemplatedSelected }) => {
     e.currentTarget.classList.add('scale-110');
     e.currentTarget.classList.replace('border-gray-900', 'border-gray-500');
     const arrayDataSend = e.currentTarget.id.split('-');
-    setTemplatedSelected({ data: templates.body.list_html[arrayDataSend[1] - 1] });
+    switch (step.current) {
+      case 0:
+        setTemplatedSelected({ data: templates.body.list_html[arrayDataSend[1]] });
+        break;
+      case 1:
+        setMailingSelected({ data: templates.body.list_mailing[arrayDataSend[1]] });
+        break;
+    }
   };
 
   useEffect(() => {
     switch (step.current) {
       case 0:
-        setDataTemplates({ data: templates.body.list_html, type: 'document' });
+        setDataTemplates({ data: templates.body.list_html });
         break;
       case 1:
-        setDataTemplates({ data: templates.body.list_mailing, type: 'mailing' });
+        setDataTemplates({ data: templates.body.list_mailing });
         break;
     }
   }, [templates]);
@@ -38,17 +45,17 @@ const Template = ({ templates, setTemplatedSelected }) => {
             <div>
               <h1 className='text-center text-xl text-red-700 font-bold'>¡Error!</h1>
             </div>
-          ) : dataTemplates.data && dataTemplates.data.lenght <= 0 ? (
+          ) : dataTemplates && dataTemplates.data && dataTemplates.data.lenght <= 0 ? (
             <div>
               <h1 className='text-center text-xl text-red-700 font-bold'>No hay templates cargados</h1>
             </div>
-          ) : dataTemplates.data && (
+          ) : dataTemplates && dataTemplates.data && (
             <div className='grid grid-cols-3'>
-              {dataTemplates.data.map((template) => {
+              {dataTemplates.data.map((template, index) => {
                 const { id, image, name } = template;
                 return (
                   <div key={name}>
-                    <button id={`${name}-${id}`} type='button' onClick={(e) => handleClick(e)} className={`buttonTemplate${dataTemplates.type} h-full m-2 border-gray-900 hover:border-gray-500 hover:scale-110 duration-200 border-2 transform rounded cursor-pointer`}>
+                    <button id={`${name}-${index}`} type='button' onClick={(e) => handleClick(e)} className={`buttonTemplate${dataTemplates.type} h-full m-2 border-gray-900 hover:border-gray-500 hover:scale-110 duration-200 border-2 transform rounded cursor-pointer`}>
                       <img className='object-contain' src={image} alt={name} />
                     </button>
                   </div>
