@@ -14,8 +14,7 @@ createConnection().then(async (connection: { name: any }) => {
   app.use(express.json({}))
   app.use(helmet())
   app.use(cookieParser(process.env.SECRET_KEY))
-  // app.use(cors({ origin: ['http://www.dynamicdoc.com.ar', '201.212.176.171'], credentials: true }))
-  app.use(cors({ origin: true, credentials: true }))
+  app.use(cors({ origin: true, credentials: false }))
   app.use('/dd/static/resource', express.static(path.join(__dirname, '../public')))
 
   app.use((err : Error, req : Request, res : Response, next : NextFunction) => {

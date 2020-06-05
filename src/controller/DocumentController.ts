@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express'
 import { getRepository } from 'typeorm'
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
 import { Template } from '../entity/Template'
 import { Document } from '../entity/Document'
 import { readExcel } from '../utils/myUtils'
@@ -50,7 +51,6 @@ export class DocumentController {
 
       return responseJSON(true, 'html_created', 'HTML created', { base64: htmlOK }, 201)
     } catch (error) {
-      console.info(error.message)
       return responseJSON(false, 'template_not_found', `Template '${nameTemplate}' no encontrado`, [], 200)
     }
   }
@@ -99,24 +99,37 @@ export class DocumentController {
         return responseJSON(false, 'document_not_exist', 'Document not exist', [], 200)
       }
 
-      const base64PDF = await fs.readFileSync(`${uploadsPath}\\html_generated\\${document.id}.html`, 'base64')
-      return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64PDF }, 200)
+      const base64document = await fs.readFileSync(`${uploadsPath}\\html_generated\\${document.id}.html`, 'base64')
+      return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64document }, 200)
     } catch (error) {
       return responseJSON(false, 'document_not_found', 'Document not found', [], 200)
     }
   }
 
   async readEncrypt (req: Request, res: Response) {
-    const { encrypted_id: encryptedId } = req.params
-    if (!encryptedId) {
-      return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['encrypted_id'])
+    const { encrypt_req: encryptReq, id } = req.params
+
+    if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO) {
+      return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypt_req'], 200)
+    }
+    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${id}`).digest('hex')
+
+    if (encryptReq !== encryptServer) {
+      return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
     }
     try {
-      const id = encryptedId
-      const base64PDF = await fs.readFileSync(`${uploadsPath}\\html_generated\\${id}.html`, 'base64')
-      return responseJSON(true, 'pdf_sent', 'PDF sent', { base64: base64PDF }, 200)
+      const document = await getRepository(Document).createQueryBuilder('document')
+        .where('document.isStatus = true AND document.id = :arg_id', { arg_id: id })
+        .getOne()
+
+      if (!document) {
+        return responseJSON(false, 'document_not_exist', 'Documento no existe', [], 200)
+      }
+
+      const base64Document = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.document`, 'base64')
+      return responseJSON(true, 'document_sent', 'document enviado', { base64: base64Document }, 200)
     } catch (error) {
-      return responseJSON(false, 'document_not_found', 'Documento not found', [], 200)
+      return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 200)
     }
   }
 }

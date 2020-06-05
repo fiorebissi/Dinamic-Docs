@@ -22,24 +22,21 @@ export const sendMail = async (toEmail : string, html : string) : Promise<Object
 }
 
 export const sendMailExternal = (toClient : string, toEmail : string, html : string) => {
-  const htmlToBase64 = Buffer.from(`${html}`).toString('base64')
+  // const htmlToBase64 = Buffer.from(`${html}`).toString('base64')
 
-  return axios({
-    method: 'post',
-    url: 'http://ticketsymarbetes.com.ar/sendMailClient.php',
-    data: {
+  return axios('http://ticketsymarbetes.com.ar/sendMailDD.php', {
+    method: 'POST',
+    data: JSON.stringify({
       client: toClient,
       email: toEmail,
-      html: htmlToBase64
-    },
+      html: html
+    }),
     headers: {
       'Content-Type': 'application/json'
     }
   })
     .then((objEnd) => {
       const { data } = objEnd
-
-      console.log(data)
       return true
     }).catch(function (error) {
       console.log(`Error_1= ${error}`)

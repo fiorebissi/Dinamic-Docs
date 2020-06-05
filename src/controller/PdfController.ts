@@ -129,22 +129,27 @@ export class PdfController {
   }
 
   async setPngInPdf (req: Request, res: Response) {
-    const { encrypted_id: encryptedId, sign } = req.body
+    const { encrypt_req: encryptReq, id, sign } = req.body
 
-    if (!encryptedId || !sign) {
-      return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['encrypted_id', 'sign'])
+    if (!encryptReq || !id || !sign || !process.env.SECRET_CRYPTO) {
+      return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['encrypt_req', 'sign', 'id'])
     }
-    const id = encryptedId
+
+    const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO).update(`${id}`).digest('hex')
+
+    if (encryptReq !== encryptServer) {
+      return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
+    }
     const pdf = await getRepository(Pdf).createQueryBuilder('pdf')
       .where('pdf.isStatus = true AND pdf.id = :arg_id', { arg_id: id })
       .getOne()
 
     if (!pdf) {
-      return responseJSON(false, 'pdf_not_exist', 'Pdf no existe', [encryptedId])
+      return responseJSON(false, 'pdf_not_exist', 'Pdf no existe', [])
     }
 
     if (pdf.isSigned) {
-      return responseJSON(false, 'pdf_previously_signed', 'Pdf firmado previamente', [encryptedId])
+      return responseJSON(false, 'pdf_previously_signed', 'Pdf firmado previamente', [])
     }
     const pathNewPDF = `${uploadsPath}\\pdf_generated\\${pdf.id}_signed.pdf`
 

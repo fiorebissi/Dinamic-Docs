@@ -7,7 +7,7 @@ import { Template } from '../entity/Template'
 import { Mailing } from '../entity/Mailing'
 import { createDocument } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
-import { sendMail } from '../utils/mail'
+import { sendMailExternal } from '../utils/mail'
 const templatePath = path.join(__dirname, '..\\resource\\template\\')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads\\')
 
@@ -81,7 +81,7 @@ export class MailingController {
       const document = `${uploadsPath}\\mailing_generated\\${newMailing.id}.html`
       const template = await fs.readFileSync(`${templatePath}\\mailing\\${nameTemplate}.html`, 'utf8')
       const htmlBases64 = await createDocument(document, template, variables)
-      const resultMail = await sendMail(to, Buffer.from(htmlBases64, 'base64').toString('utf8'))
+      const resultMail = await sendMailExternal('Probando de Probando', to, Buffer.from(htmlBases64, 'base64').toString('utf8'))
 
       return responseJSON(true, 'mailing_created', 'Mailing created', { id: objMailing.id, result_mail: resultMail, base64: htmlBases64 }, 201)
     } catch (error) {
@@ -102,14 +102,14 @@ export class MailingController {
         .getOne()
 
       if (!mailing) {
-        return responseJSON(true, 'mailing_not_exist', 'Mailing not exisit', [])
+        return responseJSON(false, 'mailing_not_exist', 'Mailing no existe', [])
       }
       const fileMailing = await fs.readFileSync(`${uploadsPath}\\mailing_generated\\${mailing.id}.html`, 'utf8')
-      const resultMail = await sendMail(to, fileMailing)
+      const resultMail = await sendMailExternal('Probando de Probando', to, fileMailing)
 
-      return responseJSON(true, 'mailing_sent', 'Mail sent', { id: id, result_mail: resultMail }, 200)
+      return responseJSON(true, 'mailing_sent', 'Correo electronico fue enviado.', { id: id, result_mail: resultMail }, 200)
     } catch {
-      return responseJSON(true, 'mailing_not_found', 'Document mailing not found', [])
+      return responseJSON(false, 'mailing_not_found', 'Mailing no encontrado', [])
     }
   }
 
