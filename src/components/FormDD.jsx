@@ -38,6 +38,7 @@ const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
         return { type: 'error' };
       })
       .then((response) => {
+        Swal.fire('Ramon Chozas S.A', response.message, 'success');
         console.log(response);
         return response;
       });

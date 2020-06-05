@@ -42,11 +42,12 @@ const FileForm = ({ templates }) => {
     <main className='animated fadeIn lg:grid lg:grid-cols-2'>
       { deviceIs() === 'desktop' && <Template setTemplatedSelected={setTemplatedSelected} templates={{ ...templates, step }} /> }
       <div className='bg-white w-full h-full flex flex-col justify-center items-center'>
-        <FileDD templatedSelected={templatedSelected} setStep={setStep} setDataMailing={setDataMailing} />
+        <FileDD templatedSelected={templatedSelected} setDataDOM={setDataDOM} setStep={setStep} setDataMailing={setDataMailing} />
         {dataDOM && dataDOM.body.count <= 20 ? (
-          <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl'>
+          <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl pt-8'>
             <thead>
               <tr>
+                <th className='px-4 py-2'> </th>
                 <th className='px-4 py-2'>Nombre</th>
                 <th className='px-4 py-2'>Apellido</th>
                 <th className='px-4 py-2'>Email</th>
@@ -61,12 +62,13 @@ const FileForm = ({ templates }) => {
                 const id = index;
                 return (
                   <tr key={id}>
+                    <td className='border px-4 py-2'><input className='mr-2 leading-tight' type='checkbox' /></td>
                     <td className='border px-4 py-2'>{firstName}</td>
                     <td className='border px-4 py-2'>{lastName}</td>
                     <td className='border px-4 py-2'>{email}</td>
                     <td className='border px-4 py-2'>{enterprise}</td>
                     <td className='h-full w-full flex justify-center items-center'>
-                      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar</button>
+                      <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Enviar</button>
                     </td>
                   </tr>
                 );
