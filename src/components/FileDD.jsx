@@ -1,7 +1,7 @@
 import React from 'react';
 import Swal from 'sweetalert2';
 
-const FileDD = ({ setDataMailing, templatedSelected, setDataDOM }) => {
+const FileDD = ({ setDataMailing, templatedSelected, setDataDOM, setStep }) => {
 
   const handleClick = (e) => {
     e.preventDefault();
@@ -33,7 +33,7 @@ const FileDD = ({ setDataMailing, templatedSelected, setDataDOM }) => {
         } else {
           Swal.fire({
             title: 'Ramon Chozas S.A',
-            text: 'Datos Cargados y Generados',
+            text: `Datos Cargados y Generados. Se cargaron ${response.body.count} Registros`,
             icon: 'success',
             showCancelButton: true,
             confirmButtonColor: '#007ace',
@@ -42,6 +42,11 @@ const FileDD = ({ setDataMailing, templatedSelected, setDataDOM }) => {
             confirmButtonText: 'Enviar Documentos Dinamicos',
           }).then((result) => {
             if (result.value) {
+              // setStep(1);
+              // setDataMailing({
+              //   send: true,
+              //   ...dataSend.current,
+              // });
               Swal.fire(
                 'Ramon Chozas S.A',
                 'Enviados',
