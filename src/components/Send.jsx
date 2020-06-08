@@ -29,6 +29,7 @@ const Send = ({ dataMailing, mailingSelected }) => {
         'variables': {
           ...data,
         },
+        'document_id': dataMailing.document_id,
       }),
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +37,7 @@ const Send = ({ dataMailing, mailingSelected }) => {
       // credentials: 'include',
     };
 
-    return fetch('http://www.rchdynamic.com.ar/dd/mailing/', header)
+    return fetch('http://www.rchdynamic.com.ar/dd/mailing/create-and-send/', header)
       .then((response) => {
         return response.json();
       })

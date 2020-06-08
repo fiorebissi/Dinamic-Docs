@@ -85,6 +85,7 @@ const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
                     setDataMailing({
                       send: true,
                       ...dataSend.current,
+                      document_id: response.body.id,
                     });
                   }
                 });
