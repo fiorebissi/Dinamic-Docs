@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import LoaderDualRing from './LoaderDualRing';
 import LabelInput from './LabelInput';
 
 const Send = ({ dataMailing, mailingSelected }) => {
-  const [isDisabled, setIsDisabled] = useState(true);
   const id = useRef(null);
 
   const petition = () => {
@@ -67,7 +66,6 @@ const Send = ({ dataMailing, mailingSelected }) => {
           .then((response) => {
             if (response.type === 'success') {
               Swal.fire('Ramon Chozas S.A', 'Mailing creado con exito!', 'success');
-              setIsDisabled(false);
               id.current = response.body.id;
             } else {
               Swal.fire('Ramon Chozas S.A', response.message, 'error');
@@ -77,7 +75,7 @@ const Send = ({ dataMailing, mailingSelected }) => {
     });
   };
 
-  const enviar = () => {
+  /*const enviar = () => {
 
     const header = { method: 'POST',
       body: JSON.stringify({
@@ -107,7 +105,7 @@ const Send = ({ dataMailing, mailingSelected }) => {
         }
         return 1;
       });
-  };
+  };*/
 
   useEffect(() => {
     window.scrollTo(0, document.body.scrollHeight);
@@ -130,12 +128,12 @@ const Send = ({ dataMailing, mailingSelected }) => {
           );
         })}
         <div className='flex flex-col justify-between space-y-4'>
-          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' type='submit' disabled={!isDisabled}>
-            Crear Mailing
-          </button>
-          <button onClick={enviar} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' disabled={isDisabled}>
+          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' type='submit'>
             Enviar Mailing
           </button>
+          {/*<button onClick={enviar} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' disabled={isDisabled}>
+            Enviar Mailing
+      </button>*/}
         </div>
       </form>
     </div>

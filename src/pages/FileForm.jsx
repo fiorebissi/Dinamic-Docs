@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
 import Template from '../components/Template';
 import { deviceIs } from '../funciones';
 import FileDD from '../components/FileDD';
 import Send from '../components/Send';
+import LoaderDualRing from '../components/LoaderDualRing';
 
 const FileForm = ({ templates }) => {
   const [dataDOM, setDataDOM] = useState(null);
@@ -31,89 +34,159 @@ const FileForm = ({ templates }) => {
       method: 'GET',
       // credentials: 'include',
     };
-    fetch(`http://www.rchdynamic.com.ar/dd/document/${index}`, miInit)
-    // fetch('http://localhost:3000/dd/document/create/excel', miInit)
-      .then((response) => {
-        return response.json();
-      })
-      .catch((error) => {
-        Swal.fire('Ramon Chozas S.A', error, 'error');
-        console.log(error);
-        return { type: 'error' };
-      })
-      .then((response) => {
-        console.log(response);
-        if (response.type === 'error') {
-          Swal.fire(
-            'Ramon Chozas S.A',
-            response.message,
-            'error',
-          );
-        } else {
-          const url = `data:text/html;base64,${response.body.base64}`;
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'filename.html';
-          document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
-          a.click();
-          a.remove(); //afterwards we remove the element again
-        }
+    const MySwal = withReactContent(Swal);
+    MySwal.fire({
+      title: 'Enviando Información...',
+      html: (
+        <LoaderDualRing />
+      ),
+      showConfirmButton: false,
+      allowOutsideClick: false,
+      onRender: () => {
+        fetch(`http://www.rchdynamic.com.ar/dd/document/${index}`, miInit)
+        // fetch('http://localhost:3000/dd/document/create/excel', miInit)
+          .then((response) => {
+            return response.json();
+          })
+          .catch((error) => {
+            Swal.fire('Ramon Chozas S.A', error, 'error');
+            console.log(error);
+            return { type: 'error' };
+          })
+          .then((response) => {
+            console.log(response);
+            if (response.type === 'error') {
+              Swal.fire(
+                'Ramon Chozas S.A',
+                response.message,
+                'error',
+              );
+            } else {
+              MySwal.close();
+              const url = `data:text/html;base64,${response.body.base64}`;
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'filename.html';
+              document.body.appendChild(a); // we need to append the element to the dom -> otherwise it will not work in firefox
+              a.click();
+              a.remove(); //afterwards we remove the element again
+            }
+          });
+      },
+    });
+  };
+
+  const goToNextStep = (id) => {
+    const data = [];
+    templatedSelected.data.variables.forEach((variable) => {
+      const { key, name } = variable;
+      data[`${key}`] = document.getElementById(`${id - 1}-${name}`).innerText;
+    });
+    setStep(1);
+    setDataMailing({
+      send: true,
+      ...data,
+      document_id: id,
+    });
+  };
+
+  const selectAll = (e) => {
+    if (e.currentTarget.checked) {
+      document.querySelectorAll('.checkboxDownload').forEach((checkbox) => {
+        const input = checkbox;
+        input.checked = true;
       });
+    } else {
+      document.querySelectorAll('.checkboxDownload').forEach((checkbox) => {
+        const input = checkbox;
+        input.checked = false;
+      });
+    }
   };
 
   return (
-    <main className='animated fadeIn'>
+    <main>
       <div className='lg:grid lg:grid-cols-2 relative'>
         {step === 1 && (
-          <div className='absolute z-10 bg-black opacity-75 top-0 left-0 w-full h-full rounded transform scale-105' />
+          <div className='absolute z-10 bg-black opacity-75 top-0 left-0 w-full h-full rounded transform scale-105 pb-8' />
         )}
         { deviceIs() === 'desktop' && <Template setMailingSelected={setMailingSelected} setTemplatedSelected={setTemplatedSelected} templates={{ ...templates, step }} /> }
-        <div className='bg-white w-full h-full flex flex-col justify-center items-center'>
-          <FileDD templatedSelected={templatedSelected} setDataDOM={setDataDOM} setStep={setStep} setDataMailing={setDataMailing} />
-          {dataDOM && dataDOM.body.count <= 20 ? (
-            <div>
-              <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl pt-8'>
-                <thead>
-                  <tr>
-                    <th className='px-4 py-2'> </th>
-                    <th className='px-4 py-2'>Nombre</th>
-                    <th className='px-4 py-2'>Apellido</th>
-                    <th className='px-4 py-2'>Email</th>
-                    <th className='px-4 py-2'>Empresa</th>
-                    <th className='px-4 py-2 font-bold'>Descargar</th>
-                    <th className='px-4 py-2 font-bold'>Enviar Mail</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {dataDOM.body.list_user.map((data, index) => {
-                    const { firstName, lastName, email, enterprise } = data;
-                    console.log(data);
-                    const id = index;
-                    return (
-                      <tr key={id}>
-                        <td className='border px-4 py-2'><input className='mr-2 leading-tight' type='checkbox' /></td>
-                        <td className='border px-4 py-2'>{firstName}</td>
-                        <td className='border px-4 py-2'>{lastName}</td>
-                        <td className='border px-4 py-2'>{email}</td>
-                        <td className='border px-4 py-2'>{enterprise}</td>
-                        <td className='border px-4 py-2'>
-                          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar</button>
-                        </td>
-                        <td className='border px-4 py-2'>
-                          <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Enviar Mail</button>
-                        </td>
+        {templatedSelected && (
+          <div className='bg-white w-full h-full flex flex-col justify-center items-center animated fadeIn'>
+            <FileDD templatedSelected={templatedSelected} setDataDOM={setDataDOM} setStep={setStep} setDataMailing={setDataMailing} />
+            {dataDOM && dataDOM.body.count <= 20 ? (
+              <div className='max-w-full'>
+                <div>
+                  <p className='text-right font-bold'>{`Cantidad de Registros Cargados: ${dataDOM.body.count}`}</p>
+                </div>
+                <div className='overflow-x-auto'>
+                  <table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl pt-8'>
+                    <thead>
+                      <tr>
+                        <th>
+                          <label className='flex flex-col py-2 px-1' htmlFor='allCheckbox'>
+                            Seleccionar
+                            <input id='allCheckbox' onChange={selectAll} className='leading-tight' type='checkbox' />
+                          </label>
+                        </th>
+                        <th>Nombre</th>
+                        <th>Apellido</th>
+                        <th>Email</th>
+                        <th>Empresa</th>
+                        <th className='font-bold'>Enviar Mail</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              <div className='flex p-4'>
-                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-3' type='button' onClick={() => handleDownload(id + 1)}>Generar Todos</button>
-                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar Seleccionados</button>
+                    </thead>
+                    <tbody>
+                      {dataDOM.body.list_user.map((data, index) => {
+                        const { firstName, lastName, email, enterprise } = data;
+                        const id = index;
+                        return (
+                          <tr className='text-center text-sm' key={id}>
+                            <td className='border p-1'>
+                              <div className='flex justify-center items-center h-full w-full'>
+                                <input className='leading-tight mt-1 checkboxDownload' type='checkbox' />
+                              </div>
+                            </td>
+                            { templatedSelected.data.variables.map((variable) => {
+                              const { id, name } = variable;
+                              let tdText = '';
+                              const keyIndex = index;
+
+                              switch (id) {
+                                case 1:
+                                  tdText = firstName;
+                                  break;
+                                case 2:
+                                  tdText = lastName;
+                                  break;
+                                case 3:
+                                  tdText = email;
+                                  break;
+                                case 4:
+                                  tdText = enterprise;
+                                  break;
+                              }
+                              return (
+                                <td key={`${keyIndex}-${name}`} className='border p-1' id={`${keyIndex}-${name}`}>{tdText}</td>
+                              );
+                            })}
+                            <td className='border p-1 flax justify-center items-center'>
+                              <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => goToNextStep(id + 1)}>Enviar Mail</button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <div className='flex p-4 space-x-4'>
+                  <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar Seleccionados</button>
+                  <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar Todos</button>
+                </div>
               </div>
-            </div>
-          ) : dataDOM && <div><p>{`La cantidad de registros es: ${dataDOM.body.count}`}</p></div>}
-        </div>
+            ) : dataDOM && <div><p>{`La cantidad de registros es: ${dataDOM.body.count}`}</p></div>}
+          </div>
+        )}
       </div>
       {dataMailing.send && step === 1 && (
         <div className='pb-12'>

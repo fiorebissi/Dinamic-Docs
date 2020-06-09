@@ -1,79 +1,57 @@
 import React from 'react';
 import Swal from 'sweetalert2';
 
-const FileDD = ({ setDataMailing, templatedSelected, setDataDOM, setStep }) => {
+const FileDD = ({ templatedSelected, setDataDOM }) => {
 
   const handleClick = (e) => {
     e.preventDefault();
     if (templatedSelected === null) {
       Swal.fire('Ramon Chozas S.A', 'Debe seleccionar un template!', 'warning');
+    } else {
+      const formData = new FormData(document.forms.namedItem('formCsv'));
+      const miInit = {
+        method: 'POST',
+        body: formData,
+        // credentials: 'include',
+      };
+      fetch(`http://www.rchdynamic.com.ar/dd/document/excel/${templatedSelected.data.name}`, miInit)
+      // fetch('http://localhost:3000/dd/document/create/excel', miInit)
+        .then((response) => response.json())
+        .catch((error) => {
+          console.log(error);
+          return { ...error, type: 'error' };
+        })
+        .then((response) => {
+          console.log(response);
+          if (response.type === 'error') {
+            Swal.fire(
+              'Ramon Chozas S.A',
+              response.message,
+              'error',
+            );
+          } else {
+            Swal.fire('Ramon Chozas S.A', `Datos Cargados y Generados. Se cargaron ${response.body.count} Registros`, 'success');
+            setDataDOM(response);
+          }
+          // Swal.fire({
+          //   icon: 'question',
+          //   title: '¿Le gustaría enviarlo por mail?',
+          //   confirmButtonText: 'Si',
+          //   cancelButtonText: 'No',
+          //   showCancelButton: true,
+          //   reverseButtons: true,
+          //   allowOutsideClick: false,
+          // }).then((resolve) => {
+          //   if (resolve) {
+          //     setStep(1);
+          //     setDataMailing({
+          //       send: true,
+          //       ...dataSend.current,
+          //     });
+          //   }
+          // });
+        });
     }
-    const formData = new FormData(document.forms.namedItem('formCsv'));
-    const miInit = {
-      method: 'POST',
-      body: formData,
-      // credentials: 'include',
-    };
-    console.log(templatedSelected);
-    fetch(`http://www.rchdynamic.com.ar/dd/document/excel/${templatedSelected.data.name}`, miInit)
-    // fetch('http://localhost:3000/dd/document/create/excel', miInit)
-      .then((response) => response.json())
-      .catch((error) => {
-        console.log(error);
-        return { ...error, type: 'error' };
-      })
-      .then((response) => {
-        console.log(response);
-        if (response.type === 'error') {
-          Swal.fire(
-            'Ramon Chozas S.A',
-            response.message,
-            'error',
-          );
-        } else {
-          Swal.fire({
-            title: 'Ramon Chozas S.A',
-            text: `Datos Cargados y Generados. Se cargaron ${response.body.count} Registros`,
-            icon: 'success',
-            showCancelButton: true,
-            confirmButtonColor: '#007ace',
-            cancelButtonColor: '#d33',
-            cancelButtonText: 'Cerrar',
-            confirmButtonText: 'Enviar Documentos Dinamicos',
-          }).then((result) => {
-            if (result.value) {
-              // setStep(1);
-              // setDataMailing({
-              //   send: true,
-              //   ...dataSend.current,
-              // });
-              Swal.fire(
-                'Ramon Chozas S.A',
-                'Enviados',
-                'success',
-              );
-            }
-          });
-          setDataDOM(response);
-        }
-        // Swal.fire({
-        //   icon: 'question',
-        //   title: '¿Le gustaría enviarlo por mail?',
-        //   confirmButtonText: 'Si',
-        //   cancelButtonText: 'No',
-        //   showCancelButton: true,
-        //   reverseButtons: true,
-        //   allowOutsideClick: false,
-        // }).then((resolve) => {
-        //   if (resolve) {
-        //     setStep(1);
-        //     setDataMailing({
-        //       send: true,
-        //       ...dataSend.current,
-        //     });
-        //   }
-        // });
-      });
   };
 
   return (

@@ -39,7 +39,7 @@ const Template = ({ templates, setTemplatedSelected, setMailingSelected }) => {
   return (
     <main className='w-full h-full hidden lg:flex lg:flex-col'>
       <h1 className='text-blue-600 text-2xl font-bold text-center'>Seleccione un Template:</h1>
-      <div className='flex flex-row justify-center items-center flex-grow'>
+      <div className='flex flex-row justify-center items-center flex-grow pt-4'>
         { !templates.state ? <LoaderDualRing /> : templates.type !== 'success' ?
           (
             <div>
@@ -50,7 +50,7 @@ const Template = ({ templates, setTemplatedSelected, setMailingSelected }) => {
               <h1 className='text-center text-xl text-red-700 font-bold'>No hay templates cargados</h1>
             </div>
           ) : dataTemplates && dataTemplates.data && (
-            <div className='grid grid-cols-3'>
+            <div className='grid grid-cols-3 pb-8'>
               {dataTemplates.data.map((template, index) => {
                 const { id, image, name } = template;
                 return (

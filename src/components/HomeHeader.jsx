@@ -6,8 +6,7 @@ import '../assets/styles/homeHeader.css';
 
 const HomeHeader = ({ title }) => {
   const item = JSON.parse(localStorage.getItem('user'));
-  const { user } = item || { user: { firstName: undefined, lastName: undefined } };
-  const { firstName, lastName } = user;
+  const { user: { firstName, lastName } } = item || { user: { firstName: undefined, lastName: undefined } };
   return (
     <div className='Home__header flex items-center justify-around text-white bg-blue-600 shadow border-b-2 border-blue-900'>
       <Link to='/home' className='w-20 lg:w-24'>

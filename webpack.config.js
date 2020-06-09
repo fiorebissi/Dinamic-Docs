@@ -8,7 +8,6 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const TersetJSPlugin = require('terser-webpack-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const PurgecssPlugin = require('purgecss-webpack-plugin');
-const HtmlCriticalWebpackPlugin = require('html-critical-webpack-plugin');
 const manifest = require('./modules-manifest.json');
 
 const PATHS = {
@@ -110,19 +109,6 @@ module.exports = {
     }),
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['**/app.*'],
-    }),
-    new HtmlCriticalWebpackPlugin({
-      base: path.resolve(__dirname, 'dist'),
-      src: 'index.html',
-      dest: 'index.html',
-      inline: true,
-      minify: true,
-      extract: true,
-      width: 375,
-      height: 565,
-      penthouse: {
-        blockJSRequests: false,
-      },
     }),
   ],
 };
