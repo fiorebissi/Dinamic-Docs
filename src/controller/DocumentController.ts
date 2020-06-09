@@ -4,24 +4,21 @@ import { getRepository } from 'typeorm'
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
+import { execSync } from 'child_process'
 import { Template } from '../entity/Template'
 import { Document } from '../entity/Document'
 import { readExcel } from '../utils/myUtils'
-import { createDocument } from '../utils/document'
+import { createDocument, createOne, createMany, createZIP } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { formRequest } from '../utils/multipart'
+// import { sendSmsGET } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads')
 
 export class DocumentController {
-	/**
-	 *
-	 * @param req
-	 * @param res
-	 */
 	async createHTML (req : Request, res : Response) {
-		const { name_template: nameTemplate, variables } = req.body
-		if (!nameTemplate || !variables) {
+		const { name_template: nameTemplate, data } = req.body
+		if (!nameTemplate || !data || data.length < 1) {
 			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
 		}
 
@@ -33,43 +30,49 @@ export class DocumentController {
 			return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate], 200)
 		}
 
-		const objDocument : Document = {
+		const document = await getRepository(Document).save({
 			template: template,
 			author: 'req.body.jwt_usuario_username',
-			count: 1,
+			count: data.length,
 			isStatus: true,
 			createtAt: new Date(
 				new Date().toLocaleString('es-AR', {
 					timeZone: 'America/Argentina/Buenos_Aires'
 				})
 			)
+		})
+
+		if (!document || !document.id) {
+			return responseJSON(false, 'document-error_document', 'Error al registrar documento', [], 200)
 		}
 		try {
-			const newDocument = await getRepository(Document).save(objDocument)
-			const document = `${uploadsPath}\\document_generated\\${newDocument.id}.html`
 			const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
-			const htmlOK = await createDocument(document, dataTemplate, variables)
-
-			if (!htmlOK) {
-				return responseJSON(false, 'error_internal', 'Error in variables', [], 200)
+			if (data.length > 1) {
+				const result = await createMany(document.id, data, dataTemplate)
+				if (result.length > 1) {
+					return responseJSON(true, 'document-error_many', 'Error en algunos registros', result, 200)
+				}
+				// const pathFiles = '..\\..\\uploads\\' + document.id.toString()
+				// await createZIP(path.dirname(path.join(__dirname, pathFiles)))
+				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', [], 201)
 			}
 
-			return responseJSON(true, 'html_created', 'HTML creado', { id: newDocument.id, base64: htmlOK }, 201)
+			const result = await createOne(document.id, data[0], dataTemplate)
+
+			if (!result) {
+				return responseJSON(true, 'document-error_created', 'Error al generar documento', [], 200)
+			}
+			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, base64: result }, 201)
 		} catch (error) {
-			return responseJSON(false, 'template_not_found', `Template '${nameTemplate}' no encontrado`, [], 200)
+			console.log('error.message :>> ', error.message)
+			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
 		}
 	}
 
 	async createExcel (req: Request, res: Response) {
-		const { name_template: nameTemplate } = req.params
-		if (!nameTemplate) {
-			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template'], 200)
-		}
-
-		try {
-			const templateEmail = await fs.readFileSync(`${templatesPath}\\document\\${nameTemplate}.html`, 'utf8')
-			return formRequest(req).then(async path => {
-				const dataExcel : any = await readExcel(`${path}`)
+		return formRequest(req).then(async path => {
+			const dataExcel : any = await readExcel(`${path}`)
+			/*
 				let i = 0
 
 				for await (const item of dataExcel) {
@@ -81,13 +84,11 @@ export class DocumentController {
 						'{{email}}': item.email,
 						'{{enterprise}}': item.enterprise
 					}
-					await createDocument(`${uploadsPath}\\document_generated\\${i}.html`, bufferTemplate, variables)
+					await createDocument(`${uploadsPath}\\document_generated\\${i}.html`, bufferTemplate, variables, false)
 				}
-				return responseJSON(true, 'html_generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: i }, 200)
-			}).catch(error => responseJSON(false, error.result, error.message, [], 200))
-		} catch (error) {
-			return responseJSON(false, 'template_not_found', `Template '${nameTemplate}' no encontrado`, [], 200)
-		}
+				*/
+			return responseJSON(true, 'html_generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: dataExcel.length }, 200)
+		}).catch(error => responseJSON(false, error.result, error.message, [], 200))
 	}
 
 	async read (req: Request, res: Response) {
