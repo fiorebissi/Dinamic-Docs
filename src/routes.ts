@@ -6,10 +6,10 @@ import { routesMailing } from './routes/routesMailing'
 import { routesPdf } from './routes/routesPdf'
 
 export const Routes = [
-  ...routesIndex,
-  ...routesSecurity,
-  ...routesDocument,
-  ...routesMailing,
-  ...routesPdf,
-  ...routesTemplate
+	...routesIndex,
+	...routesSecurity,
+	...routesDocument,
+	...routesMailing,
+	...routesPdf,
+	...routesTemplate
 ]

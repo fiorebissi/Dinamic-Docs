@@ -4,11 +4,10 @@ import { getRepository } from 'typeorm'
 import fs from 'fs'
 import path from 'path'
 import crypto from 'crypto'
-import { execSync } from 'child_process'
 import { Template } from '../entity/Template'
 import { Document } from '../entity/Document'
 import { readExcel } from '../utils/myUtils'
-import { createDocument, createOne, createMany, createZIP } from '../utils/document'
+import { createOne, createMany, createZIP } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { formRequest } from '../utils/multipart'
 // import { sendSmsGET } from '../utils/infobip'
@@ -52,8 +51,7 @@ export class DocumentController {
 				if (result.length > 1) {
 					return responseJSON(true, 'document-error_many', 'Error en algunos registros', result, 200)
 				}
-				// const pathFiles = '..\\..\\uploads\\' + document.id.toString()
-				// await createZIP(path.dirname(path.join(__dirname, pathFiles)))
+				await createZIP(document.id)
 				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', [], 201)
 			}
 
@@ -64,7 +62,7 @@ export class DocumentController {
 			}
 			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, base64: result }, 201)
 		} catch (error) {
-			console.log('error.message :>> ', error.message)
+			console.info('error.message :>> ', error.message)
 			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
 		}
 	}
@@ -137,7 +135,7 @@ export class DocumentController {
 			// const base64Document = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.document`, 'base64')
 			// return responseJSON(true, 'document_sent', 'document enviado', { base64: base64Document }, 200)
 		} catch (error) {
-			console.log(error.message)
+			console.info(error.message)
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
 		}
 	}

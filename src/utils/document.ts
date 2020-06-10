@@ -25,7 +25,7 @@ export const createOne = async (id : Number, oneData : any, dataTemplate : strin
 		const document = `${uploadsPath}\\document_generated\\${id}.html`
 		return await createDocument(document, dataTemplate, oneData, true)
 	} catch (error) {
-		console.log('error.message :>> ', error.message)
+		console.info('error.message :>> ', error.message)
 		return null
 	}
 }
@@ -45,25 +45,24 @@ export const createMany = async (id : Number, objectJSON : Array<any>, dataTempl
 
 		return errors
 	} catch (error) {
-		console.log('error.message :>> ', error.message)
+		console.info('error.message :>> ', error.message)
 		return null
 	}
 }
 
-export const createZIP = async (directoryToZip : String) => {
-	return console.log('directoryToZip :>> ', directoryToZip)
-	/*
-	const files = await fs.readdirSync(`${uploadsPath}\\document_generated\\${directoryToZip}`)
+export const createZIP = async (documentID : number) => {
+	const files = await fs.readdirSync(`${uploadsPath}\\document_generated\\${documentID}`)
 	const zipfile = new yazl.ZipFile()
 
 	for await (const file of files) {
-		zipfile.addFile(`${__dirname}\\..`, 'asd.js')
+		const patas = await fs.readFileSync(`${uploadsPath}\\document_generated\\${documentID}\\${file}`)
+		zipfile.addBuffer(Buffer.from(patas), file)
 	}
 
-	zipfile.outputStream.pipe(fs.createWriteStream(`${uploadsPath}\\document_generated\\${directoryToZip}.zip`)).on('close', function () {
-		console.log('done')
-	})
+	zipfile.outputStream.pipe(fs.createWriteStream(`${uploadsPath}\\document_generated\\${documentID}.zip`))
+		.on('close', function () {
+			console.info('done')
+		})
 
 	zipfile.end()
-	*/
 }
