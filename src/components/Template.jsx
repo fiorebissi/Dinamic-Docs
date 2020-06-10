@@ -39,7 +39,7 @@ const Template = ({ templates, setTemplatedSelected, setMailingSelected }) => {
   return (
     <main className='w-full h-full hidden lg:flex lg:flex-col'>
       <h1 className='text-blue-600 text-2xl font-bold text-center'>Seleccione un Template:</h1>
-      <div className='flex flex-row justify-center items-center flex-grow pt-4'>
+      <div className='pt-4'>
         { !templates.state ? <LoaderDualRing /> : templates.type !== 'success' ?
           (
             <div>

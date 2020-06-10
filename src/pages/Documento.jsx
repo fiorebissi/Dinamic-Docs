@@ -63,9 +63,9 @@ const Documento = () => {
           </button>
         </animated.div>
       </div>
-      <div className='form_body'>
+      <div className='form_body relative'>
         {transitions.map(({ item: location, props, key }) => (
-          <animated.div key={key} style={props}>
+          <animated.div className='w-full' key={key} style={props}>
             <Switch location={location}>
               <Route path='/home/documentosDinamicos/formClient'>
                 <FormClient templates={templatesData} />

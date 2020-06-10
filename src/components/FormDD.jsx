@@ -17,9 +17,9 @@ const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
     const header = { method: 'POST',
       body: JSON.stringify({
         'name_template': templatedSelected.data.name,
-        'variables': {
+        data: [{
           ...data,
-        },
+        }],
       }),
       headers: {
         'Content-Type': 'application/json',

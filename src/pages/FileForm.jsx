@@ -29,9 +29,23 @@ const FileForm = ({ templates }) => {
     });
   };
 
-  const handleDownload = (index) => {
+  const handleDownload = () => {
+    /*templatedSelected.data.variables.forEach((variable) => {
+      const { key, name } = variable;
+      dataSend.current[`${key}`] = document.querySelector(`#${name}`).value;
+    });
+    const data = dataSend.current;*/
     const miInit = {
-      method: 'GET',
+      method: 'POST',
+      body: JSON.stringify({
+        'name_template': templatedSelected.data.name,
+        data: [{
+          //...data,
+        }],
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
       // credentials: 'include',
     };
     const MySwal = withReactContent(Swal);
@@ -43,7 +57,7 @@ const FileForm = ({ templates }) => {
       showConfirmButton: false,
       allowOutsideClick: false,
       onRender: () => {
-        fetch(`http://www.rchdynamic.com.ar/dd/document/${index}`, miInit)
+        fetch('http://www.rchdynamic.com.ar/dd/document/', miInit)
         // fetch('http://localhost:3000/dd/document/create/excel', miInit)
           .then((response) => {
             return response.json();
@@ -180,8 +194,7 @@ const FileForm = ({ templates }) => {
                   </table>
                 </div>
                 <div className='flex p-4 space-x-4'>
-                  <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar Seleccionados</button>
-                  <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload(id + 1)}>Generar Todos</button>
+                  <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload()}>Generar Seleccionados</button>
                 </div>
               </div>
             ) : dataDOM && <div><p>{`La cantidad de registros es: ${dataDOM.body.count}`}</p></div>}
