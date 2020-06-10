@@ -23,7 +23,7 @@ export const replaceAll = (str : string, map : Array<any>) => {
 export const createOne = async (id : Number, oneData : any, dataTemplate : string) : Promise<any> => {
 	try {
 		const document = `${uploadsPath}\\document_generated\\${id}.html`
-		return await createDocument(document, dataTemplate, oneData, true)
+		return await createDocument(document, dataTemplate, oneData, false)
 	} catch (error) {
 		console.info('error.message :>> ', error.message)
 		return null
@@ -60,9 +60,6 @@ export const createZIP = async (documentID : number) => {
 	}
 
 	zipfile.outputStream.pipe(fs.createWriteStream(`${uploadsPath}\\document_generated\\${documentID}.zip`))
-		.on('close', function () {
-			console.info('done')
-		})
 
 	zipfile.end()
 }

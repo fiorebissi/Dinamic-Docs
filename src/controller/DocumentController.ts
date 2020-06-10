@@ -17,7 +17,7 @@ const uploadsPath = path.join(__dirname, '..\\..\\uploads')
 export class DocumentController {
 	async createHTML (req : Request, res : Response) {
 		const { name_template: nameTemplate, data } = req.body
-		if (!nameTemplate || !data || data.length < 1) {
+		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
 			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
 		}
 
@@ -45,6 +45,7 @@ export class DocumentController {
 			return responseJSON(false, 'document-error_document', 'Error al registrar documento', [], 200)
 		}
 		try {
+			const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
 			const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
 			if (data.length > 1) {
 				const result = await createMany(document.id, data, dataTemplate)
@@ -52,7 +53,7 @@ export class DocumentController {
 					return responseJSON(true, 'document-error_many', 'Error en algunos registros', result, 200)
 				}
 				await createZIP(document.id)
-				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', [], 201)
+				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', { id: document.id, crypto_id: cryptoId }, 201)
 			}
 
 			const result = await createOne(document.id, data[0], dataTemplate)
@@ -60,7 +61,7 @@ export class DocumentController {
 			if (!result) {
 				return responseJSON(true, 'document-error_created', 'Error al generar documento', [], 200)
 			}
-			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, base64: result }, 201)
+			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, crypto_id: cryptoId }, 201)
 		} catch (error) {
 			console.info('error.message :>> ', error.message)
 			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
@@ -126,14 +127,13 @@ export class DocumentController {
 				.where('document.isStatus = true AND document.id = :arg_id', { arg_id: id })
 				.getOne()
 
-			if (!document) {
+			if (!document || !document.count) {
 				return responseJSON(false, 'document_not_exist', 'Documento no existe', [], 200)
 			}
 
-			const fileDocument = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'utf8')
+			const typeFile = document.count > 1 ? 'zip' : 'html'
+			const fileDocument = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.${typeFile}`, 'utf8')
 			res.send(fileDocument)
-			// const base64Document = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.document`, 'base64')
-			// return responseJSON(true, 'document_sent', 'document enviado', { base64: base64Document }, 200)
 		} catch (error) {
 			console.info(error.message)
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
