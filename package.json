@@ -1,6 +1,6 @@
 {
-  "name": "ws_documentos_dinamicos",
-  "main": "index.js",
+  "name": "documentos-dinamicos",
+  "main": "app.js",
   "author": "Abbul Rodriguez y Ariel Villarreal <arielvillagu@hotmail.com>",
   "license": "ISC",
   "repository": {},
@@ -9,13 +9,13 @@
   "version": "1.0.0",
   "description": "Web Services RESTFUL",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "webpack --config ./webpack.config.js --mode production",
     "build:dll": "webpack --config ./webpack.dll.config.js --mode production",
     "dev": "webpack-dev-server  --config  ./webpack.dev.config.js --open --mode development",
-    "start": "node build/index.js",
-    "build:back": "tsc -p .",
-    "dev:back": "nodemon src/index.ts"
+    "start": "node build/app.js",
+		"build:back": "tsc -p .",
+		"dev:front": "webpack-dev-server  --config  ./webpack.dev.config.js --open --mode development",
+    "dev:back": "nodemon src/app.ts"
   },
   "keywords": [],
   "devDependencies": {

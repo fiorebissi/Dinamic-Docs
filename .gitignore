@@ -126,7 +126,6 @@ yarn-error.log
 dist/
 
 modules-manifest.json
-package-lock.json
 
 *.zip
 *.rar

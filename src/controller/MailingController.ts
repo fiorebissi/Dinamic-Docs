@@ -10,6 +10,7 @@ import { createDocument } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { sendMailExternal } from '../utils/mail'
 import { Document } from '../entity/Document'
+import { sendEmailPOST } from '../utils/infobip'
 const templatePath = path.join(__dirname, '..\\resource\\template\\')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads\\')
 
@@ -119,7 +120,9 @@ export class MailingController {
 				return responseJSON(false, 'mailing_not_exist', 'Mailing no existe', [])
 			}
 			const fileMailing = await fs.readFileSync(`${uploadsPath}\\mailing_generated\\${mailing.id}.html`, 'utf8')
-			const resultMail = await sendMailExternal('Probando de Probando', to, fileMailing)
+			// const resultMail = await sendMailExternal('Probando de Probando', to, fileMailing)
+			const resultMail = await sendEmailPOST()
+			console.log('resultMail :>> ', resultMail)
 
 			return responseJSON(true, 'mailing_sent', 'Correo electronico fue enviado.', { id: id, result_mail: resultMail }, 200)
 		} catch {
