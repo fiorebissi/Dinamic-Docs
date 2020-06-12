@@ -30,6 +30,61 @@ export class DocumentController {
 			return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate], 200)
 		}
 
+		try {
+			const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
+			const arrayDocument : Array<any> = []
+			for await (const oneData of data) {
+				const document = await getRepository(Document).save({
+					template: template,
+					author: 'req.body.jwt_usuario_username',
+					count: 1,
+					isStatus: true,
+					createtAt: new Date(
+						new Date().toLocaleString('es-AR', {
+							timeZone: 'America/Argentina/Buenos_Aires'
+						})
+					)
+				})
+
+				if (!document || !document.id) {
+					return null
+				}
+
+				const result = await createOne(document.id, oneData, dataTemplate)
+				if (!result) {
+					return null
+				}
+				const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
+				arrayDocument.push({ id: document.id, encrypted: cryptoId })
+			}
+
+			if (data.length === 1) {
+				const documentBase64 : any = await fs.readFileSync(`${uploadsPath}\\document_generated\\${arrayDocument[0].id}.html`, 'base64')
+				const nuevoArray = { ...arrayDocument[0], base64: documentBase64 }
+				return responseJSON(true, 'document_created', 'Generado Correctamente', nuevoArray, 201)
+			}
+
+			return responseJSON(true, 'documents_created', 'Generados Correctamente', arrayDocument, 201)
+		} catch (error) {
+			console.info('error.message :>> ', error.message)
+			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
+		}
+	}
+
+	async createHTMLGenerandoUnZIP (req : Request, res : Response) {
+		const { name_template: nameTemplate, data } = req.body
+		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
+		}
+
+		const template = await getRepository(Template).createQueryBuilder('template')
+			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
+			.getOne()
+
+		if (!template) {
+			return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate], 200)
+		}
+
 		const document = await getRepository(Document).save({
 			template: template,
 			author: 'req.body.jwt_usuario_username',
@@ -111,12 +166,12 @@ export class DocumentController {
 		if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
 			return responseJSON(false, 'error_internal', 'Sin credenciales para enviar sms', [], 200)
 		}
-		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.dynamicdoc.com.ar/#/home/dd/${encrypted}/${id}`
+		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.dynamicdoc.com.ar/generar/#/home/dd/${encrypted}/${id}`
 		const resultSMS : any = await sendSmsGET(phone, textSMS, process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)
 		return responseJSON(true, 'sms_sent', 'Mensaje enviado', { result_message: resultSMS[0] }, 201)
 	}
 
-	async readEncrypted (req: Request, res: Response, next : NextFunction) {
+	async readEncrypted (req: Request) {
 		const { encrypted, id } = req.params
 
 		if (!parseInt(id) || !encrypted || !process.env.SECRET_CRYPTO_DOC) {

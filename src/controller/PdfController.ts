@@ -73,17 +73,20 @@ export class PdfController {
 			count: 1,
 			author: 'req.body.jwt_usuario_username',
 			isStatus: true,
+			isSigned: false,
 			createtAt: new Date(
 				new Date().toLocaleString('es-AR', {
 					timeZone: 'America/Argentina/Buenos_Aires'
 				})
 			)
 		}
+		const newPdf = await getRepository(Pdf).save(objPdf)
+		if (!newPdf) {
+			return responseJSON(false, 'error-pdf', 'Error al guardar PDF', [])
+		}
+		const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${newPdf.id}`).digest('hex')
+		const pathPDF = `${uploadsPath}\\pdf_generated\\${newPdf.id}.pdf`
 		try {
-			const newPdf = await getRepository(Pdf).save(objPdf)
-			const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${newPdf.id}`).digest('hex')
-
-			const pathPDF = `${uploadsPath}\\pdf_generated\\${newPdf.id}.pdf`
 			const template = await fs.readFileSync(`${templatesPath}\\pdf\\${nameTemplate}.pdf`)
 			let objs
 
@@ -124,6 +127,7 @@ export class PdfController {
 
 			return responseJSON(true, 'pdf_created', 'Mensaje enviado', { id: newPdf.id, result_message: resultSMS[0] }, 201)
 		} catch (error) {
+			console.info('error.message :>> ', error.message)
 			return responseJSON(false, 'error_interno', 'Error Interno', [], 200)
 		}
 	}
