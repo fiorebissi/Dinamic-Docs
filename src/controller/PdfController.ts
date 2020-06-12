@@ -129,15 +129,15 @@ export class PdfController {
 	}
 
 	async setPngInPdf (req: Request, res: Response) {
-		const { encrypt_req: encryptReq, id, sign } = req.body
+		const { encrypted, id, sign } = req.body
 
-		if (!encryptReq || !id || !sign || !process.env.SECRET_CRYPTO_PDF) {
-			return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['encrypt_req', 'sign', 'id'])
+		if (!encrypted || !id || !sign || !process.env.SECRET_CRYPTO_PDF) {
+			return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['encrypted', 'sign', 'id'])
 		}
 
 		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${id}`).digest('hex')
 
-		if (encryptReq !== encryptServer) {
+		if (encrypted !== encryptServer) {
 			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
 		}
 		const pdf = await getRepository(Pdf).createQueryBuilder('pdf')
@@ -200,15 +200,15 @@ export class PdfController {
 		}
 	}
 
-	async readEncrypt (req: Request, res: Response) {
-		const { encrypt_req: encryptReq, id } = req.params
+	async readEncrypted (req: Request, res: Response) {
+		const { encrypted, id } = req.params
 
-		if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO_PDF) {
-			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypt_req'], 200)
+		if (!parseInt(id) || !encrypted || !process.env.SECRET_CRYPTO_PDF) {
+			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypted'], 200)
 		}
 		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${id}`).digest('hex')
 
-		if (encryptReq !== encryptServer) {
+		if (encrypted !== encryptServer) {
 			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
 		}
 		try {

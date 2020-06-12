@@ -72,28 +72,24 @@ export const sendSmsGET = (numberPhone: String, message : String, username: Stri
 		.catch(() => null)
 }
 
-export const sendEmailPOST = (token?: String) : Promise<Object> => {
+export const sendEmailPOST = (to: String, from : String, subject : String, html : String) : Promise<Object> => {
 	if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
 		const message = { error: 'sin credenciales', user: process.env.USER_INFOBIP, password: process.env.PASSWORD_INFOBIP }
 		return Promise.reject(message)
 	}
 
-	return axios({
+	return axios('https://zp4d6.api.infobip.com/email/2/send', {
 		method: 'POST',
-		url: 'https://zp4d6.api.infobip.com/email/2/send',
 		headers: {
 			Authorization: `Basic ${encodeBasic(process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)}`,
-			'Content-Type': 'application/json',
+			'Content-Type': 'application/x-www-form-urlencoded',
 			Accept: 'application/json'
 		},
-		maxRedirects: 20,
 		data: JSON.stringify({
-			from: 'Jane Smith <jane.smith@somecompany.com>',
-			to: 'arodriguez@rchozas.com.ar',
-			replyTo: 'all.replies@somedomain.com',
-			subject: 'Mail subject text',
-			text: 'Mail body text',
-			html: '<h1>Html body</h1><p>Rich HTML message body.</p>'
+			from: from,
+			to: to,
+			subject: subject,
+			html: html
 		})
 	})
 		.then((body) => {

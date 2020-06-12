@@ -10,12 +10,11 @@ import { createDocument } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { sendMailExternal } from '../utils/mail'
 import { Document } from '../entity/Document'
-import { sendEmailPOST } from '../utils/infobip'
 const templatePath = path.join(__dirname, '..\\resource\\template\\')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads\\')
 
 export class MailingController {
-	async create (req : Request, res: Response) {
+	async create (req : Request) {
 		const { to, name_template: nameTemplate, variables } = req.body
 
 		if (!to || !nameTemplate || !variables || !process.env.SECRET_CRYPTO) {
@@ -55,7 +54,7 @@ export class MailingController {
 		}
 	}
 
-	async createAndSend (req : Request, res: Response) {
+	async createAndSend (req : Request) {
 		const { to, name_template: nameTemplate, document_id: documentID, variables } = req.body
 
 		if (!to || !nameTemplate || !variables || !documentID || !process.env.SECRET_CRYPTO_DOC) {
@@ -120,9 +119,7 @@ export class MailingController {
 				return responseJSON(false, 'mailing_not_exist', 'Mailing no existe', [])
 			}
 			const fileMailing = await fs.readFileSync(`${uploadsPath}\\mailing_generated\\${mailing.id}.html`, 'utf8')
-			// const resultMail = await sendMailExternal('Probando de Probando', to, fileMailing)
-			const resultMail = await sendEmailPOST()
-			console.log('resultMail :>> ', resultMail)
+			const resultMail = await sendMailExternal('Probando de Probando', to, fileMailing)
 
 			return responseJSON(true, 'mailing_sent', 'Correo electronico fue enviado.', { id: id, result_mail: resultMail }, 200)
 		} catch {
@@ -130,7 +127,7 @@ export class MailingController {
 		}
 	}
 
-	async read (req : Request) {
+	async readEncrypted (req : Request) {
 		const { id } = req.params
 
 		if (!id) {
@@ -151,5 +148,19 @@ export class MailingController {
 		} catch {
 			return responseJSON(true, 'mailing_not_found', 'Mailing no encontrado', [])
 		}
+	}
+
+	async xxxxxMejorandoCreateAndSend (req : Request) {
+		const resultCreate : any = await this.create(req)
+
+		if (!Object.prototype.hasOwnProperty.call(resultCreate.body, 'id') || !Object.prototype.hasOwnProperty.call(resultCreate.body, 'base64')) {
+			return resultCreate
+		}
+
+		const resultSend = await this.send(req)
+		if (resultSend.type !== 'success') {
+			return resultCreate
+		}
+		return responseJSON(true, 'mailing_created', 'Mailing created', { id: resultCreate.body.id, base64: resultCreate.body.base64 }, 201)
 	}
 }

@@ -10,6 +10,7 @@ import { readExcel } from '../utils/myUtils'
 import { createOne, createMany, createZIP } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { formRequest } from '../utils/multipart'
+import { sendSmsGET } from '../utils/infobip'
 // import { sendSmsGET } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads')
@@ -53,7 +54,7 @@ export class DocumentController {
 					return responseJSON(true, 'document-error_many', 'Error en algunos registros', result, 200)
 				}
 				await createZIP(document.id)
-				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', { id: document.id, crypto_id: cryptoId }, 201)
+				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', { id: document.id, encrypted: cryptoId }, 201)
 			}
 
 			const result = await createOne(document.id, data[0], dataTemplate)
@@ -61,7 +62,8 @@ export class DocumentController {
 			if (!result) {
 				return responseJSON(true, 'document-error_created', 'Error al generar documento', [], 200)
 			}
-			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, crypto_id: cryptoId }, 201)
+
+			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, encrypted: cryptoId, base64: result }, 201)
 		} catch (error) {
 			console.info('error.message :>> ', error.message)
 			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
@@ -90,36 +92,39 @@ export class DocumentController {
 		}).catch(error => responseJSON(false, error.result, error.message, [], 200))
 	}
 
-	async read (req: Request, res: Response) {
-		const { id } = req.params
-		if (!parseInt(id)) {
-			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id'], 200)
+	async sendSMS (req: Request, res:Response) {
+		const { id, encrypted, phone } = req.body
+		if (!id || !encrypted || !phone || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'missing_parameters', 'Faltan Parametros', ['id', 'encrypted', 'phone'], 200)
 		}
-		try {
-			const document = await getRepository(Document).createQueryBuilder('document')
-				.where('document.isStatus = true AND document.id = :arg_id', { arg_id: id })
-				.getOne()
 
-			if (!document) {
-				return responseJSON(false, 'document_not_exist', 'Document not exist', [], 200)
-			}
-
-			const base64document = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'base64')
-			return responseJSON(true, 'html_sent', 'HTML sent', { base64: base64document }, 200)
-		} catch (error) {
-			return responseJSON(false, 'document_not_found', 'Document not found', [], 200)
+		/*
+		if (id !== req.body.jwt_user_id) {
+			return responseJSON(false, 'error_unauthorized', 'No Autorizado', [], 401)
 		}
+		*/
+		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${id}`).digest('hex')
+
+		if (encrypted !== encryptServer) {
+			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
+		}
+		if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
+			return responseJSON(false, 'error_internal', 'Sin credenciales para enviar sms', [], 200)
+		}
+		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.dynamicdoc.com.ar/#/home/dd/${encrypted}/${id}`
+		const resultSMS : any = await sendSmsGET(phone, textSMS, process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)
+		return responseJSON(true, 'sms_sent', 'Mensaje enviado', { result_message: resultSMS[0] }, 201)
 	}
 
-	async readEncrypt (req: Request, res: Response, next : NextFunction) {
-		const { encrypt_req: encryptReq, id } = req.params
+	async readEncrypted (req: Request, res: Response, next : NextFunction) {
+		const { encrypted, id } = req.params
 
-		if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO_DOC) {
-			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypt_req'], 200)
+		if (!parseInt(id) || !encrypted || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypted'], 200)
 		}
 		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${id}`).digest('hex')
 
-		if (encryptReq !== encryptServer) {
+		if (encrypted !== encryptServer) {
 			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
 		}
 		try {
@@ -131,9 +136,12 @@ export class DocumentController {
 				return responseJSON(false, 'document_not_exist', 'Documento no existe', [], 200)
 			}
 
-			const typeFile = document.count > 1 ? 'zip' : 'html'
-			const fileDocument = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.${typeFile}`, 'utf8')
-			res.send(fileDocument)
+			if (document.count > 1) {
+				const zipBase64 = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.zip`, 'base64')
+				return responseJSON(true, 'zip_sent', 'ZIP Enviado', { base64: zipBase64 }, 200)
+			}
+			const documentBase64 = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'base64')
+			return responseJSON(true, 'document_sent', 'Documento Enviado', { base64: documentBase64 }, 200)
 		} catch (error) {
 			console.info(error.message)
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
