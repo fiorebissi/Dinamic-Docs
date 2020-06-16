@@ -11,7 +11,6 @@ import { createOne, createMany, createZIP } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { formRequest } from '../utils/multipart'
 import { sendSmsGET } from '../utils/infobip'
-// import { sendSmsGET } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads')
 
@@ -166,7 +165,7 @@ export class DocumentController {
 		if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
 			return responseJSON(false, 'error_internal', 'Sin credenciales para enviar sms', [], 200)
 		}
-		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.dynamicdoc.com.ar/generar/#/home/dd/${encrypted}/${id}`
+		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${encrypted}/${id}/view`
 		const resultSMS : any = await sendSmsGET(phone, textSMS, process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)
 		return responseJSON(true, 'sms_sent', 'Mensaje enviado', { result_message: resultSMS[0] }, 201)
 	}
@@ -197,6 +196,34 @@ export class DocumentController {
 			}
 			const documentBase64 = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'base64')
 			return responseJSON(true, 'document_sent', 'Documento Enviado', { base64: documentBase64 }, 200)
+		} catch (error) {
+			console.info(error.message)
+			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
+		}
+	}
+
+	async readAndView (req: Request, res : Response) {
+		const { encrypted, id } = req.params
+
+		if (!parseInt(id) || !encrypted || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypted'], 200)
+		}
+		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${id}`).digest('hex')
+
+		if (encrypted !== encryptServer) {
+			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
+		}
+		try {
+			const document = await getRepository(Document).createQueryBuilder('document')
+				.where('document.isStatus = true AND document.id = :arg_id', { arg_id: id })
+				.getOne()
+
+			if (!document || !document.count) {
+				return responseJSON(false, 'document_not_exist', 'Documento no existe', [], 200)
+			}
+
+			const dataDocument = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'utf8')
+			res.send(dataDocument)
 		} catch (error) {
 			console.info(error.message)
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)

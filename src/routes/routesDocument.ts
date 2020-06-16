@@ -30,5 +30,11 @@ export const routesDocument = [
 		route: '/document/encrypted/:encrypted/:id',
 		controller: DocumentController,
 		action: 'readEncrypted'
+	},
+	{
+		method: 'get',
+		route: '/document/encrypted/:encrypted/:id/view',
+		controller: DocumentController,
+		action: 'readAndView'
 	}
 ]
