@@ -33,6 +33,7 @@ const FileForm = ({ templates }) => {
 	}
 
 	const handleDownload = () => {
+		rowSelected.current = []
 		const data = []
 		let keys = {
 			'{{city}}': '',
@@ -43,11 +44,18 @@ const FileForm = ({ templates }) => {
 		document.querySelectorAll('.checkboxDownload').forEach((checkbox, index) => {
 			const input = checkbox
 			if (input.checked === true) {
-				templatedSelected.data.variables.forEach((variable, index) => {
+				templatedSelected.data.variables.forEach((variable, i) => {
 					const { key, name } = variable
-					switch (index) {
+					switch (i) {
 					case 0:
-						keys = { ...keys, '{{city}}': document.getElementById(`${index}${name}`).innerText }
+						let genero = document.getElementById(`${index}${name}`).innerText.toLowerCase();
+						if (genero === 'masculino' || genero === 'm' || genero === 'o') {
+							genero = 'o'
+						}
+						if (genero === 'femenino' || genero === 'f' || genero === 'a') {
+							genero = 'a'
+						}
+						keys = { ...keys, '{{gender}}': genero }
 						break
 					case 1:
 						keys = { ...keys, '{{firstName}}': document.getElementById(`${index}${name}`).innerText }
@@ -56,7 +64,7 @@ const FileForm = ({ templates }) => {
 						keys = { ...keys, '{{lastName}}': document.getElementById(`${index}${name}`).innerText }
 						break
 					case 3:
-						keys = { ...keys, '{{gender}}': document.getElementById(`${index}${name}`).innerText }
+						keys = { ...keys, '{{city}}': document.getElementById(`${index}${name}`).innerText }
 						break
 					default:
 						break
@@ -138,9 +146,7 @@ const FileForm = ({ templates }) => {
 			'{{gender}}': '',
 			'{{lastName}}': ''
 		}
-		let flag = false
 		let indexRow
-		let count = 0
 		let data
 		templatedSelected.data.variables.forEach((variable, index) => {
 			const { key, name } = variable
@@ -161,12 +167,12 @@ const FileForm = ({ templates }) => {
 				break
 			}
 		})
-		flag = rowSelected.current.filter((row, index) => {
+		rowSelected.current.filter((row, index) => {
 			indexRow = index
-			count++
 			return row === id
 		})
-		console.log(count)
+		console.log(dataGenerated.current.body)
+		console.log(indexRow)
 		if (Array.isArray(dataGenerated.current.body)) {
 			data = dataGenerated.current.body[indexRow]
 		} else {
