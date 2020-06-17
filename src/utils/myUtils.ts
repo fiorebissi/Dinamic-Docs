@@ -2,10 +2,14 @@
 import fs, { PathLike } from 'fs'
 import csv from 'csv-parse'
 
-export const readExcel = (pathAndExcel : PathLike) => {
+export const readExcel = (pathAndExcel : PathLike, columns : Number) => {
 	const salida : any = []
 	return new Promise((resolve, reject) => {
 		fs.createReadStream(pathAndExcel, { encoding: 'utf8' }).pipe(csv()).on('data', (row) => {
+			if (row.length !== columns) {
+				// eslint-disable-next-line prefer-promise-reject-errors
+				reject('Contenido Erroneo')
+			}
 			salida.push({
 				firstName: row[0],
 				lastName: row[1],

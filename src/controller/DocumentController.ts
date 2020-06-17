@@ -9,13 +9,13 @@ import { Document } from '../entity/Document'
 import { readExcel } from '../utils/myUtils'
 import { createOne, createMany, createZIP } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
-import { formRequest } from '../utils/multipart'
+import { parseRequest } from '../utils/multipart'
 import { sendSmsGET } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads')
 
 export class DocumentController {
-	async createHTML (req : Request, res : Response) {
+	async createHTML (req : Request) {
 		const { name_template: nameTemplate, data } = req.body
 		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
 			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
@@ -70,7 +70,7 @@ export class DocumentController {
 		}
 	}
 
-	async createHTMLGenerandoUnZIP (req : Request, res : Response) {
+	async createHTMLGenerandoUnZIP (req : Request) {
 		const { name_template: nameTemplate, data } = req.body
 		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
 			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
@@ -105,7 +105,7 @@ export class DocumentController {
 			if (data.length > 1) {
 				const result = await createMany(document.id, data, dataTemplate)
 				if (result.length > 1) {
-					return responseJSON(true, 'document-error_many', 'Error en algunos registros', result, 200)
+					return responseJSON(false, 'document-error_many', 'Error en algunos registros', result, 200)
 				}
 				await createZIP(document.id)
 				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', { id: document.id, encrypted: cryptoId }, 201)
@@ -114,7 +114,7 @@ export class DocumentController {
 			const result = await createOne(document.id, data[0], dataTemplate)
 
 			if (!result) {
-				return responseJSON(true, 'document-error_created', 'Error al generar documento', [], 200)
+				return responseJSON(false, 'document-error_created', 'Error al generar documento', [], 200)
 			}
 
 			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, encrypted: cryptoId, base64: result }, 201)
@@ -124,29 +124,33 @@ export class DocumentController {
 		}
 	}
 
-	async createExcel (req: Request, res: Response) {
-		return formRequest(req).then(async path => {
-			const dataExcel : any = await readExcel(`${path}`)
-			/*
-				let i = 0
+	async createExcel (req: Request) {
+		const resultParse : any = await parseRequest(req)
 
-				for await (const item of dataExcel) {
-					i++
-					const bufferTemplate = templateEmail
-					const variables : any = {
-						'{{firstName}}': item.firstName,
-						'{{lastName}}': item.lastName,
-						'{{email}}': item.email,
-						'{{enterprise}}': item.enterprise
-					}
-					await createDocument(`${uploadsPath}\\document_generated\\${i}.html`, bufferTemplate, variables, false)
-				}
-				*/
-			return responseJSON(true, 'html_generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: dataExcel.length }, 200)
-		}).catch(error => responseJSON(false, error.result, error.message, [], 200))
+		if (resultParse.result !== 'success') {
+			return responseJSON(false, 'document-parse_csv', resultParse.message, [], 200)
+		}
+
+		const { files: { fileCSV } } = resultParse
+
+		if (!fileCSV) {
+			return responseJSON(false, 'document-file_not_found', 'Archivo no encontrado.', ['fileCSV'], 200)
+		}
+
+		if (fileCSV.type !== 'text/csv') {
+			return responseJSON(false, 'document-type_csv', 'EL tipo de archivo es incorrecto.', [], 200)
+		}
+
+		try {
+			const dataExcel : any = await readExcel(`${fileCSV.path}`, 4)
+
+			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: dataExcel.length }, 200)
+		} catch (error) {
+			return responseJSON(false, 'dcument-structuc', error, [], 200)
+		}
 	}
 
-	async sendSMS (req: Request, res:Response) {
+	async sendSMS (req: Request) {
 		const { id, encrypted, phone } = req.body
 		if (!id || !encrypted || !phone || !process.env.SECRET_CRYPTO_DOC) {
 			return responseJSON(false, 'missing_parameters', 'Faltan Parametros', ['id', 'encrypted', 'phone'], 200)
