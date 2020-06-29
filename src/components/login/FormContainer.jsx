@@ -67,7 +67,43 @@ const FormContainer = () => {
       });
     }
 
-    const header = { method: 'POST',
+    if (username.value.toLowerCase() === 'demo' && password.value.toLowerCase()==='demo') {
+      responseLogin({
+        type: 'success',
+        body: {
+          user: {
+            firstName: 'Sistemas',
+            lastName: 'Demo'
+          }
+        }
+      })
+    } else {
+      if (username.value.toLowerCase() !== 'demo') {
+        responseLogin({
+          type: 'error',
+          body: {
+            user: {
+              firstName: 'Sistemas',
+              lastName: 'Demo'
+            }
+          },
+          message:'Usuario Incorrecto'
+        })
+      } else {
+        responseLogin({
+          type: 'error',
+          body: {
+            user: {
+              firstName: 'Sistemas',
+              lastName: 'Demo'
+            }
+          },
+          message:'Contraseña Incorrecta'
+        })
+      }
+    }
+
+    /*const header = { method: 'POST',
       body: JSON.stringify({
         'username': username.value,
         'password': password.value,
@@ -87,7 +123,7 @@ const FormContainer = () => {
       })
       .then((response) => {
         responseLogin(response);
-      });
+      });*/
   };
 
   const handleSwitchVisiblePass = () => {

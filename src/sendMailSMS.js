@@ -33,6 +33,7 @@ const sendMailSMS = (dataDD, setStep, dataSend, setDataMailing) => {
 					input: 'number',
 					confirmButtonText: 'Enviar',
 					showLoaderOnConfirm: true,
+					allowOutsideClick: false,
 					preConfirm: (phone) => {
 						return fetch('http://www.rchdynamic.com.ar/dd/document/send-sms/', {
 							method: 'POST',
@@ -62,11 +63,12 @@ const sendMailSMS = (dataDD, setStep, dataSend, setDataMailing) => {
 					},
 					allowOutsideClick: () => !Swal.isLoading()
 				}).then((result) => {
-					console.log(result)
-					if (result.value.type === 'success') {
-						Swal.fire('Ramon Chozas S.A', result.value.message, 'success')
-					} else {
-						Swal.fire('Error al enviar SMS', result.value.message, 'error')
+					if (result.isConfirmed) {
+						if (result.value.type === 'success') {
+							Swal.fire('Ramon Chozas S.A', result.value.message, 'success')
+						} else {
+							Swal.fire('Error al enviar SMS', result.value.message, 'error')
+						}
 					}
 				})
 			}
