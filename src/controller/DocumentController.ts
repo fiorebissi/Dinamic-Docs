@@ -15,6 +15,9 @@ const templatesPath = path.join(__dirname, '..\\resource\\template')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads')
 
 export class DocumentController {
+	/**
+	 * crea uno o varios "document".
+	 */
 	async createHTML (req : Request) {
 		const { name_template: nameTemplate, data } = req.body
 		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
@@ -69,8 +72,10 @@ export class DocumentController {
 			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
 		}
 	}
-
-	async createHTMLGenerandoUnZIP (req : Request) {
+	/**
+ 	*	Crea un o unos "Document". De ser varios, genera un ZIP.
+ 	*/
+	async createHtmlAndGenerateZip (req : Request) {
 		const { name_template: nameTemplate, data } = req.body
 		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
 			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
@@ -124,7 +129,10 @@ export class DocumentController {
 		}
 	}
 
-	async createExcel (req: Request) {
+	/**
+	 * Recibe un archivo excel(csv) y retorna su contenido en un JSON.
+	 */
+	async receiveExcel (req: Request) {
 		const body : any = await parseRequest(req)
 		const { name_template: nameTemplate, delimiter } = body.fields
 		const {fileCSV } = body.files
@@ -166,13 +174,19 @@ export class DocumentController {
 		}
 
 		try {
-			const dataExcel : any = await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
-			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: dataExcel.length }, 200)
+			const {error, data}= await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
+			if (error) {
+				return responseJSON(false, 'document-error_columns', error, [])	
+			}
+			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: data, count: data?.length }, 200)
 		} catch (error) {
-			return responseJSON(false, 'document-structuc', error, [], 200)
+			return responseJSON(false, 'document-structuc', "Error Interno", [])
 		}
 	}
 
+	/**
+	 * Envia un mensaje texto con un enlace al "document" solicitado.
+	 */
 	async sendSMS (req: Request) {
 		const { id, encrypted, phone } = req.body
 		if (!id || !encrypted || !phone || !process.env.SECRET_CRYPTO_DOC) {
@@ -197,6 +211,9 @@ export class DocumentController {
 		return responseJSON(true, 'sms_sent', 'Mensaje enviado', { result_message: resultSMS[0] }, 201)
 	}
 
+	/**
+	 * Lee un "document" y lo envia en base64. Obteniendo el id desde un valor encriptado.
+	 */
 	async readEncrypted (req: Request) {
 		const { encrypted, id } = req.params
 
@@ -224,11 +241,13 @@ export class DocumentController {
 			const documentBase64 = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'base64')
 			return responseJSON(true, 'document_sent', 'Documento Enviado', { base64: documentBase64 }, 200)
 		} catch (error) {
-			console.info(error.message)
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
 		}
 	}
 
+	/**
+	 * Lee un "document" y lo envia en texto plano. Obteniendo el id desde un valor encriptado.
+	 */
 	async readAndView (req: Request, res : Response) {
 		const { encrypted, id } = req.params
 
@@ -252,7 +271,6 @@ export class DocumentController {
 			const dataDocument = await fs.readFileSync(`${uploadsPath}\\document_generated\\${document.id}.html`, 'utf8')
 			res.send(dataDocument)
 		} catch (error) {
-			console.info(error.message)
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
 		}
 	}

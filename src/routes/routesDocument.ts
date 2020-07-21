@@ -11,7 +11,7 @@ export const routesDocument = [
 		method: 'post',
 		route: '/document/excel/:name_template',
 		controller: DocumentController,
-		action: 'createExcel'
+		action: 'receiveExcel'
 	},
 	{
 		method: 'post',
