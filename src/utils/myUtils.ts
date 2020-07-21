@@ -2,19 +2,24 @@
 import fs, { PathLike } from 'fs'
 import csv from 'csv-parse'
 
-export const readExcel = (pathAndExcel : PathLike) => {
-	const salida : any = []
+export const readExcel = (pathAndExcel : PathLike, columns : Array<String>) => {
+	const data : any = []
 	return new Promise((resolve, reject) => {
-		fs.createReadStream(pathAndExcel, { encoding: 'utf8' }).pipe(csv()).on('data', (row) => {
-			salida.push({
-				firstName: row[0],
-				lastName: row[1],
-				email: row[2],
-				enterprise: row[3]
+		fs.createReadStream(pathAndExcel, { encoding: 'utf8' })
+			.pipe(csv({ delimiter: ';' }))
+			.on('data', (row) => {
+				if (row.length !== columns.length) {
+				// eslint-disable-next-line prefer-promise-reject-errors
+					reject('El archivo debe estar separado por: punto y coma')
+				}
+				const oneData : any = {}
+				for (let i = 0; i < row.length; i++) {
+					oneData[`${columns[i]}`] = row[i]
+				}
+				data.push(oneData)
 			})
-		})
 			.on('end', () => {
-				resolve(salida)
+				resolve(data)
 			})
 	})
 }
@@ -42,10 +47,7 @@ export const errorsToSnake = async (errores: Array<any>) => {
 	for await (const rowErr of errores) {
 		rowErr.property =
 
-      newArray.push({
-      	propiedad: rowErr.property.replace(/[A-Z]/g, (letter: any) => `_${letter.toLowerCase()}`),
-      	errores: Object.values(rowErr.constraints)
-      })
+      newArray.push({ propiedad: rowErr.property.replace(/[A-Z]/g, (letter: any) => `_${letter.toLowerCase()}`), errores: Object.values(rowErr.constraints) })
 	}
 	return newArray
 }

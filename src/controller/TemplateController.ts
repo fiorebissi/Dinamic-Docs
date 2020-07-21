@@ -36,6 +36,7 @@ export class TemplateController {
 		const listTemplate = await getRepository(Template).createQueryBuilder('template')
 			.where('template.isStatus = true')
 			.leftJoinAndSelect('template.variables', 'variable')
+			.leftJoinAndSelect('variable.options', 'option')
 			.getMany()
 
 		const documentList = listTemplate.filter(file => file.type === 'document')

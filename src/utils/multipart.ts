@@ -27,3 +27,18 @@ export const formRequest = (req : Request) => {
 		})
 	})
 }
+
+export const parseRequest = (req : Request) => {
+	return new Promise((resolve, reject) => {
+		const form = new formidable.IncomingForm()
+		form.parse(req, async function (err, fields, files) {
+			if (err) {
+				console.info(err)
+				// eslint-disable-next-line prefer-promise-reject-errors
+				reject({ result: 'error_parse_file', message: 'Error al parsear el Archivo' })
+			}
+
+			resolve({ result: 'success', files })
+		})
+	})
+}
