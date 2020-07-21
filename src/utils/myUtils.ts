@@ -2,11 +2,11 @@
 import fs, { PathLike } from 'fs'
 import csv from 'csv-parse'
 
-export const readExcel = (pathAndExcel : PathLike, columns : Array<String>) => {
+export const readExcel = (pathAndExcel : PathLike, columns : Array<String>, delimiter : string) => {
 	const data : any = []
 	return new Promise((resolve, reject) => {
 		fs.createReadStream(pathAndExcel, { encoding: 'utf8' })
-			.pipe(csv({ delimiter: ';' }))
+			.pipe(csv({ delimiter }))
 			.on('data', (row) => {
 				if (row.length !== columns.length) {
 				// eslint-disable-next-line prefer-promise-reject-errors

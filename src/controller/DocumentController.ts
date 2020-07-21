@@ -125,10 +125,14 @@ export class DocumentController {
 	}
 
 	async createExcel (req: Request) {
-		const { name_template: nameTemplate } = req.params
+		const { name_template: nameTemplate, delimiter } = req.body
 
 		if (!nameTemplate) {
-			return responseJSON(false, 'document-name_template', 'Falta el template', ['name_template'], 200)
+			return responseJSON(false, 'document-name_template', 'Falta el template', ['name_template', 'delimiter'], 200)
+		}
+
+		if (delimiter !== ';' && delimiter !== ',') {
+			return responseJSON(false, 'document-delimiter', 'Separador erroneo', [], 200)
 		}
 		const template = await getRepository(Template).createQueryBuilder('template')
 			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
@@ -160,11 +164,11 @@ export class DocumentController {
 		}
 
 		try {
-			const dataExcel : any = await readExcel(`${fileCSV.path}`, ['a', 'b', 'c', 'd'])
+			const dataExcel : any = await readExcel(`${fileCSV.path}`, ['a', 'b', 'c', 'd'], delimiter)
 
 			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: dataExcel.length }, 200)
 		} catch (error) {
-			return responseJSON(false, 'dcument-structuc', error, [], 200)
+			return responseJSON(false, 'document-structuc', error, [], 200)
 		}
 	}
 
