@@ -159,9 +159,8 @@ export class DocumentController {
 		}
 
 		// OBTENER UN ARRAY DE LA KEY DEL TEMPLATE
-		const arrayDeVariables = template.variables.map(row => row.name)
+		const arrayDeVariables : any= template.variables.map(row => row.name)
 
-		
 		try {
 			const dataExcel : any = await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
 			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: dataExcel.length }, 200)
