@@ -125,35 +125,21 @@ export class DocumentController {
 	}
 
 	async createExcel (req: Request) {
-		const { name_template: nameTemplate, delimiter } = req.body
+		const body : any = await parseRequest(req)
+		const { name_template: nameTemplate, delimiter } = body.fields
+		const {fileCSV } = body.files
 
-		if (!nameTemplate) {
+		if (body.result !== 'success') {
+			return responseJSON(false, 'document-parse_csv', body.message, [], 200)
+		}
+
+		if (!nameTemplate || !delimiter) {
 			return responseJSON(false, 'document-name_template', 'Falta el template', ['name_template', 'delimiter'], 200)
 		}
 
 		if (delimiter !== ';' && delimiter !== ',') {
 			return responseJSON(false, 'document-delimiter', 'Separador erroneo', [], 200)
 		}
-		const template = await getRepository(Template).createQueryBuilder('template')
-			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
-			.innerJoinAndSelect('template.variables', 'variable')
-			.getOne()
-
-		if (!template) {
-			return responseJSON(false, 'document-template', 'Falta el template', [], 200)
-		}
-
-		// OBTENER UN ARRAY DE LA KEY DEL TEMPLATE
-		console.log('template :>> ', template.variables)
-		/// ////////////////////////////
-
-		const resultParse : any = await parseRequest(req)
-
-		if (resultParse.result !== 'success') {
-			return responseJSON(false, 'document-parse_csv', resultParse.message, [], 200)
-		}
-
-		const { files: { fileCSV } } = resultParse
 
 		if (!fileCSV) {
 			return responseJSON(false, 'document-file_not_found', 'Archivo no encontrado.', ['fileCSV'], 200)
@@ -162,10 +148,22 @@ export class DocumentController {
 		if (fileCSV.type !== 'text/csv' && fileCSV.type !== 'application/vnd.ms-excel') {
 			return responseJSON(false, 'document-type_csv', 'EL tipo de archivo es incorrecto.', [fileCSV.type], 200)
 		}
+		
+		const template = await getRepository(Template).createQueryBuilder('template')
+			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
+			.innerJoinAndSelect('template.variables', 'variable')
+			.getOne()
 
+		if (!template || !template.variables ) {
+			return responseJSON(false, 'document-template', 'Falta el template', [], 200)
+		}
+
+		// OBTENER UN ARRAY DE LA KEY DEL TEMPLATE
+		const arrayDeVariables = template.variables.map(row => row.name)
+
+		
 		try {
-			const dataExcel : any = await readExcel(`${fileCSV.path}`, ['a', 'b', 'c', 'd'], delimiter)
-
+			const dataExcel : any = await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
 			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: dataExcel, count: dataExcel.length }, 200)
 		} catch (error) {
 			return responseJSON(false, 'document-structuc', error, [], 200)

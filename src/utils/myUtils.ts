@@ -10,7 +10,7 @@ export const readExcel = (pathAndExcel : PathLike, columns : Array<String>, deli
 			.on('data', (row) => {
 				if (row.length !== columns.length) {
 				// eslint-disable-next-line prefer-promise-reject-errors
-					reject('El archivo debe estar separado por: punto y coma')
+					reject('La cantidad de columnas enviadas, no corresponden con las requeridas')
 				}
 				const oneData : any = {}
 				for (let i = 0; i < row.length; i++) {
