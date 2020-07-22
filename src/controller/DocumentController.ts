@@ -155,7 +155,7 @@ export class DocumentController {
 			return responseJSON(false, 'document-file_not_found', 'Archivo no encontrado.', ['fileCSV'], 200)
 		}
 
-		if (fileCSV.type !== 'text/csv' && fileCSV.type !== 'application/vnd.ms-excel') {
+		if (fileCSV.type !== 'text/csv' && fileCSV.type !== 'application/vnd.ms-excel' && fileCSV.type !== 'application/octet-stream') {
 			return responseJSON(false, 'document-type_csv', 'EL tipo de archivo es incorrecto.', [fileCSV.type], 200)
 		}
 
