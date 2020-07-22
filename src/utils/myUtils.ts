@@ -1,16 +1,16 @@
 // eslint-disable-next-line no-unused-vars
 import fs, { PathLike } from 'fs'
 import csv from 'csv-parse'
-interface Respuesta { error: string | null,data?: string | null}
+interface Respuesta { error: string | null, data?: string | null}
 
-export const readExcel = (pathAndExcel : PathLike, columns : Array<String>, delimiter : string) : Promise<Respuesta>=> {
+export const readExcel = (pathAndExcel : PathLike, columns : Array<String>, delimiter : string) : Promise<Respuesta> => {
 	const data : any = []
 	return new Promise((resolve) => {
 		fs.createReadStream(pathAndExcel, { encoding: 'utf8' })
 			.pipe(csv({ delimiter }))
 			.on('data', (row) => {
 				if (row.length !== columns.length) {
-					resolve({error : `Envió ${row.length} columnas y se requieren ${columns.length}`, data : null})
+					resolve({ error: `Envió ${row.length} columnas y se requieren ${columns.length}`, data: null })
 				}
 				const oneData : any = {}
 				for (let i = 0; i < row.length; i++) {
@@ -19,7 +19,7 @@ export const readExcel = (pathAndExcel : PathLike, columns : Array<String>, deli
 				data.push(oneData)
 			})
 			.on('end', () => {
-				resolve({error : null, data})
+				resolve({ error: null, data })
 			})
 	})
 }

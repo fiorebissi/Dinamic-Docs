@@ -72,6 +72,7 @@ export class DocumentController {
 			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
 		}
 	}
+
 	/**
  	*	Crea un o unos "Document". De ser varios, genera un ZIP.
  	*/
@@ -135,7 +136,7 @@ export class DocumentController {
 	async receiveExcel (req: Request) {
 		const body : any = await parseRequest(req)
 		const { name_template: nameTemplate, delimiter } = body.fields
-		const {fileCSV } = body.files
+		const { fileCSV } = body.files
 
 		if (body.result !== 'success') {
 			return responseJSON(false, 'document-parse_csv', body.message, [], 200)
@@ -154,33 +155,33 @@ export class DocumentController {
 		}
 
 		if (fileCSV.type !== 'text/csv' && fileCSV.type !== 'application/vnd.ms-excel' && fileCSV.type !== 'application/octet-stream') {
-			return responseJSON(false, 'document-type_csv', 'EL tipo de archivo es incorrecto.', [fileCSV.type], 200)
+			return responseJSON(false, 'document-type_csv', 'El tipo de archivo es incorrecto.', [fileCSV.type], 200)
 		}
-		
+
 		const template = await getRepository(Template).createQueryBuilder('template')
 			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
 			.innerJoinAndSelect('template.variables', 'variable')
 			.getOne()
 
-		if (!template || !template.variables ) {
+		if (!template || !template.variables) {
 			return responseJSON(false, 'document-template', 'Falta el template', [], 200)
 		}
 
 		// OBTENER UN ARRAY DE LA KEY DEL TEMPLATE
-		const arrayDeVariables : any= template.variables.map(row => row.name)
+		const arrayDeVariables : any = template.variables.map(row => row.name)
 
 		if (!arrayDeVariables || arrayDeVariables.length < 1) {
 			return responseJSON(false, 'document-template_error', 'Error en variables del template', [])
 		}
 
 		try {
-			const {error, data}= await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
+			const { error, data } = await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
 			if (error) {
-				return responseJSON(false, 'document-error_columns', error, [])	
+				return responseJSON(false, 'document-error_columns', error, [])
 			}
 			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: data, count: data?.length }, 200)
 		} catch (error) {
-			return responseJSON(false, 'document-structuc', "Error Interno", [])
+			return responseJSON(false, 'document-structuc', 'Error Interno', [])
 		}
 	}
 
