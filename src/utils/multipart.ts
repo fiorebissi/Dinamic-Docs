@@ -38,7 +38,7 @@ export const parseRequest = (req : Request) => {
 				reject({ result: 'error_parse_file', message: 'Error al parsear el Archivo' })
 			}
 
-			resolve({ result: 'success', files })
+			resolve({ result: 'success', fields, files })
 		})
 	})
 }
