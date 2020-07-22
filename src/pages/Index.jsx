@@ -1,19 +1,19 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Index = () => {
-  return (
-    <main className='bg-white w-full h-full animated fadeIn'>
-      <div className='w-full h-full flex items-center justify-center flex-col p-5 mt-4 sm:mt-12 md:mt-24 lg:mt-48 xl:mt-64'>
-        <Link to='/home/documentosDinamicos' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-4'>
+	return (
+		<main className='w-full h-full bg-white animated fadeIn'>
+			<div className='flex flex-col items-center justify-center w-full h-full p-5 mt-4 sm:mt-12 md:mt-24 lg:mt-48 xl:mt-64'>
+				<Link to='/home/documentosDinamicos/fileForm' className='px-4 py-2 m-4 font-bold text-white bg-blue-500 rounded hover:bg-blue-700'>
           Documentos Dinamicos
-        </Link>
-        <Link to='/home/Pdfs' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>
+				</Link>
+				<Link to='/home/Pdfs' className='px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700'>
           Pdfs
-        </Link>
-      </div>
-    </main>
-  );
-};
+				</Link>
+			</div>
+		</main>
+	)
+}
 
-export default Index;
+export default Index
