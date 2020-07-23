@@ -51,9 +51,7 @@ export const sendSmsPOST = (numberPhone: string, message : string, token: string
 			messages: [{
 				from: 'InfoSMS',
 				destinations:
-          [
-          	{ to: numberPhone }
-          ],
+          [{ to: numberPhone }],
 				text: message,
 				flash: true,
 				language: {
