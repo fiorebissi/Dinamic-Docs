@@ -3,29 +3,41 @@ import axios from 'axios'
 import querystring from 'querystring'
 import { encodeBasic } from '../utils/myUtils'
 
-export const loginInfobip = (username: String, password: String) : Promise<String> => {
-	return axios({
-		method: 'POST',
-		url: 'https://zp4d6.api.infobip.com/auth/1/session',
-		headers: {
-			Authorization: `Basic ${encodeBasic(username, password)}`,
-			'Content-Type': 'application/json',
-			Accept: 'application/json'
-		},
-		data: JSON.stringify({ username, password })
-	})
-		.then((body) => body.data)
-		.catch(() => null)
-		.then((objRes) => {
-			if (!objRes.token) {
-				return null
-			}
-			return objRes.token
+export const loginInfobip = () => {
+	let token : any
+	return async () => {
+		if (token) {
+			return token
+		} else if (process.env.TOKEN_INFOBIP) {
+			token = process.env.TOKEN_INFOBIP
+			return token
+		} else if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
+			throw new Error('Sin credenciales de infobip')
+		}
+		return axios({
+			method: 'POST',
+			url: 'https://zp4d6.api.infobip.com/auth/1/session',
+			headers: {
+				Authorization: `Basic ${encodeBasic(process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)}`,
+				'Content-Type': 'application/json',
+				Accept: 'application/json'
+			},
+			data: JSON.stringify({ username: process.env.USER_INFOBIP, password: process.env.PASSWORD_INFOBIP })
 		})
-		.catch(() => null)
+			.then((body) => body.data)
+			.catch(() => null)
+			.then((objRes) => {
+				if (!objRes.token) {
+					return null
+				}
+				token = objRes.token
+				return objRes.token
+			})
+			.catch(() => null)
+	}
 }
 
-export const sendSmsPOST = (numberPhone: String, message : String, token: String) : Promise<Object> => {
+export const sendSmsPOST = (numberPhone: string, message : string, token: string) : Promise<Object> => {
 	return axios({
 		method: 'POST',
 		url: 'https://zp4d6.api.infobip.com/sms/2/text/advanced',
@@ -56,7 +68,27 @@ export const sendSmsPOST = (numberPhone: String, message : String, token: String
 		.catch(() => null)
 }
 
-export const sendSmsGET = (numberPhone: String, message : String, username: String, password: String) : Promise<Object> => {
+export const sendManySmsPOST = (messages : Array<Object>, token: string) : Promise<Object> => {
+	return axios({
+		method: 'POST',
+		url: 'https://zp4d6.api.infobip.com/sms/2/text/advanced',
+		headers: {
+			Authorization: `IBSSO ${token}`,
+			'Content-Type': 'application/json',
+			Accept: 'application/json'
+		},
+		data: JSON.stringify({
+			tracking: { track: 'SMS', type: 'MY_DD' },
+			messages
+		})
+	})
+		.then((body) => body.data)
+		.catch(() => null)
+		.then((objRes) => objRes.messages)
+		.catch(() => null)
+}
+
+export const sendSmsGET = (numberPhone: string, message : string, username: string, password: string) : Promise<Object> => {
 	const parameters = querystring.stringify({ username: username, password: password, from: 'InfoSMS', to: numberPhone, text: message })
 	return axios({
 		method: 'GET',
@@ -72,7 +104,7 @@ export const sendSmsGET = (numberPhone: String, message : String, username: Stri
 		.catch(() => null)
 }
 
-export const sendEmailPOST = (to: String, from : String, subject : String, html : String) : Promise<Object> => {
+export const sendEmailPOST = (to: string, from : string, subject : string, html : string) : Promise<Object> => {
 	if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
 		const message = { error: 'sin credenciales', user: process.env.USER_INFOBIP, password: process.env.PASSWORD_INFOBIP }
 		return Promise.reject(message)

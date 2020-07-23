@@ -20,6 +20,12 @@ export const routesDocument = [
 		action: 'sendSMS'
 	},
 	{
+		method: 'post',
+		route: '/document/send-many-sms',
+		controller: DocumentController,
+		action: 'sendManySMS'
+	},
+	{
 		method: 'get',
 		route: '/document/:id',
 		controller: DocumentController,

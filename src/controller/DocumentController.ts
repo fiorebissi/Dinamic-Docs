@@ -10,13 +10,14 @@ import { readExcel } from '../utils/myUtils'
 import { createOne, createMany, createZIP } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { parseRequest } from '../utils/multipart'
-import { sendSmsGET } from '../utils/infobip'
+import { sendSmsGET, sendManySmsPOST, loginInfobip } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads')
+const getTokenInfoBip = loginInfobip()
 
 export class DocumentController {
 	/**
-	 * crea uno o varios "document".
+	 * crea uno o varios "document" dependiendo del "template" enviado.
 	 */
 	async createHTML (req : Request) {
 		const { name_template: nameTemplate, data } = req.body
@@ -72,6 +73,7 @@ export class DocumentController {
 			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
 		}
 	}
+
 	/**
  	*	Crea un o unos "Document". De ser varios, genera un ZIP.
  	*/
@@ -135,7 +137,7 @@ export class DocumentController {
 	async receiveExcel (req: Request) {
 		const body : any = await parseRequest(req)
 		const { name_template: nameTemplate, delimiter } = body.fields
-		const {fileCSV } = body.files
+		const { fileCSV } = body.files
 
 		if (body.result !== 'success') {
 			return responseJSON(false, 'document-parse_csv', body.message, [], 200)
@@ -156,31 +158,31 @@ export class DocumentController {
 		if (fileCSV.type !== 'text/csv' && fileCSV.type !== 'application/vnd.ms-excel') {
 			return responseJSON(false, 'document-type_csv', 'EL tipo de archivo es incorrecto.', [fileCSV.type], 200)
 		}
-		
+
 		const template = await getRepository(Template).createQueryBuilder('template')
 			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
 			.innerJoinAndSelect('template.variables', 'variable')
 			.getOne()
 
-		if (!template || !template.variables ) {
+		if (!template || !template.variables) {
 			return responseJSON(false, 'document-template', 'Falta el template', [], 200)
 		}
 
 		// OBTENER UN ARRAY DE LA KEY DEL TEMPLATE
-		const arrayDeVariables : any= template.variables.map(row => row.name)
+		const arrayDeVariables : any = template.variables.map(row => row.name)
 
 		if (!arrayDeVariables || arrayDeVariables.length < 1) {
 			return responseJSON(false, 'document-template_error', 'Error en variables del template', [])
 		}
 
 		try {
-			const {error, data}= await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
+			const { error, data } = await readExcel(`${fileCSV.path}`, arrayDeVariables, delimiter)
 			if (error) {
-				return responseJSON(false, 'document-error_columns', error, [])	
+				return responseJSON(false, 'document-error_columns', error, [])
 			}
 			return responseJSON(true, 'document-generate', 'Datos Cargados y Generados.', { list_user: data, count: data?.length }, 200)
 		} catch (error) {
-			return responseJSON(false, 'document-structuc', "Error Interno", [])
+			return responseJSON(false, 'document-structuc', 'Error Interno', [])
 		}
 	}
 
@@ -209,6 +211,49 @@ export class DocumentController {
 		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${encrypted}/${id}/view`
 		const resultSMS : any = await sendSmsGET(phone, textSMS, process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)
 		return responseJSON(true, 'sms_sent', 'Mensaje enviado', { result_message: resultSMS[0] }, 201)
+	}
+
+	/**
+	 * Envia varios mensajes texto con un enlace al "document" solicitado.
+	 */
+	async sendManySMS (req: Request) {
+		const { obj_registros: objRegistros } = req.body
+		if (!objRegistros || objRegistros.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'missing_parameters', 'Faltan Parametros', ['obj_registros'], 200)
+		}
+
+		const registrosErroneos : Array<any> = objRegistros.filter((one : any) => !Object.prototype.hasOwnProperty.call(one, 'id') || !Object.prototype.hasOwnProperty.call(one, 'encrypted') || !Object.prototype.hasOwnProperty.call(one, 'phone'))
+
+		if (registrosErroneos.length > 0) {
+			return responseJSON(false, 'missing_parameters', 'Registros con error', registrosErroneos, 200)
+		}
+		/*
+		if (id !== req.body.jwt_user_id) {
+			return responseJSON(false, 'error_unauthorized', 'No Autorizado', [], 401)
+		}
+		*/
+
+		const errorsSMS : Array<Object> = []
+		const manySMS : Array<Object> = []
+		for await (const registro of objRegistros) {
+			const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${registro.id}`).digest('hex')
+			if (registro.encrypted !== encryptServer) {
+				errorsSMS.push(registro)
+			} else {
+				manySMS.push({
+					from: '41793026700',
+					destinations: [{ to: registro.phone }],
+					text: `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${registro.encrypted}/${registro.id}/view`
+				})
+			}
+		}
+
+		if (manySMS.length < 1) {
+			return responseJSON(false, 'data-undefined', 'No hay registros validos', [], 200)
+		}
+
+		await sendManySmsPOST(manySMS, await getTokenInfoBip())
+		return responseJSON(true, 'sms_sent', 'Mensajes enviados', errorsSMS, 201)
 	}
 
 	/**
@@ -273,5 +318,19 @@ export class DocumentController {
 		} catch (error) {
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
 		}
+	}
+
+	async structuSms (id : string, encrypted : string, phone : string) {
+		if (!process.env.SECRET_CRYPTO_DOC || !process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
+			return responseJSON(false, 'error_internal', 'Sin credenciales para enviar sms', [], 500)
+		}
+		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${id}`).digest('hex')
+
+		if (encrypted !== encryptServer) {
+			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
+		}
+		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${encrypted}/${id}/view`
+		const resultSMS : any = await sendSmsGET(phone, textSMS, process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)
+		return responseJSON(true, 'sms_sent', 'Mensaje enviado', { result_message: resultSMS[0] }, 201)
 	}
 }
