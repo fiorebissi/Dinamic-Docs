@@ -232,23 +232,31 @@ export class DocumentController {
 		const errorsSMS : Array<Object> = []
 		const manySMS : Array<Object> = []
 		for await (const registro of objRegistros) {
-			const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${registro.id}`).digest('hex')
-			if (registro.encrypted !== encryptServer) {
-				errorsSMS.push(registro)
-			} else {
-				manySMS.push({
-					from: '41793026700',
-					destinations: [{ to: registro.phone }],
-					text: `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${registro.encrypted}/${registro.id}/view`
-				})
-			}
+			/// /////////////////
+			/// //////Este codigo valida que el "encrypted" recibido sera correcto.
+			/// ////// Pero obviamente hace demorar mas la respuesta.
+			/// //////////
+			// const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${registro.id}`).digest('hex')
+			// if (registro.encrypted !== encryptServer) {
+			// errorsSMS.push(registro)
+			// } else {
+			manySMS.push({
+				from: '41793026700',
+				destinations: [{ to: registro.phone }],
+				text: `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${registro.encrypted}/${registro.id}/view`
+			})
+			// }
 		}
 
 		if (manySMS.length < 1) {
 			return responseJSON(false, 'data-undefined', 'No hay registros validos', [], 200)
 		}
 
-		await sendManySmsPOST(manySMS, await getTokenInfoBip())
+		const tokenInfoBip = await getTokenInfoBip()
+		if (!tokenInfoBip) {
+			return responseJSON(false, 'error-credenciales', 'No se pudo enviar ningun mensaje.', [])
+		}
+		await sendManySmsPOST(manySMS, tokenInfoBip)
 		return responseJSON(true, 'sms_sent', 'Mensajes enviados', errorsSMS, 201)
 	}
 

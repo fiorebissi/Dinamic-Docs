@@ -15,6 +15,12 @@ export const routesMailing = [
 	},
 	{
 		method: 'post',
+		route: '/mailing/create-and-send-addDocument',
+		controller: MailingController,
+		action: 'createAndSendAddDocument'
+	},
+	{
+		method: 'post',
 		route: '/mailing/send',
 		controller: MailingController,
 		action: 'send'

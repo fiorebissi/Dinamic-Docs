@@ -12,7 +12,7 @@ export const loginInfobip = () => {
 			token = process.env.TOKEN_INFOBIP
 			return token
 		} else if (!process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
-			throw new Error('Sin credenciales de infobip')
+			return null
 		}
 		return axios({
 			method: 'POST',
