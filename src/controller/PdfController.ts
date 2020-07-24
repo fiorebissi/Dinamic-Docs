@@ -73,17 +73,20 @@ export class PdfController {
 			count: 1,
 			author: 'req.body.jwt_usuario_username',
 			isStatus: true,
+			isSigned: false,
 			createtAt: new Date(
 				new Date().toLocaleString('es-AR', {
 					timeZone: 'America/Argentina/Buenos_Aires'
 				})
 			)
 		}
+		const newPdf = await getRepository(Pdf).save(objPdf)
+		if (!newPdf) {
+			return responseJSON(false, 'error-pdf', 'Error al guardar PDF', [])
+		}
+		const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${newPdf.id}`).digest('hex')
+		const pathPDF = `${uploadsPath}\\pdf_generated\\${newPdf.id}.pdf`
 		try {
-			const newPdf = await getRepository(Pdf).save(objPdf)
-			const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${newPdf.id}`).digest('hex')
-
-			const pathPDF = `${uploadsPath}\\pdf_generated\\${newPdf.id}.pdf`
 			const template = await fs.readFileSync(`${templatesPath}\\pdf\\${nameTemplate}.pdf`)
 			let objs
 
@@ -124,20 +127,21 @@ export class PdfController {
 
 			return responseJSON(true, 'pdf_created', 'Mensaje enviado', { id: newPdf.id, result_message: resultSMS[0] }, 201)
 		} catch (error) {
+			console.info('error.message :>> ', error.message)
 			return responseJSON(false, 'error_interno', 'Error Interno', [], 200)
 		}
 	}
 
 	async setPngInPdf (req: Request, res: Response) {
-		const { encrypt_req: encryptReq, id, sign } = req.body
+		const { encrypted, id, sign } = req.body
 
-		if (!encryptReq || !id || !sign || !process.env.SECRET_CRYPTO_PDF) {
-			return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['encrypt_req', 'sign', 'id'])
+		if (!encrypted || !id || !sign || !process.env.SECRET_CRYPTO_PDF) {
+			return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['encrypted', 'sign', 'id'])
 		}
 
 		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${id}`).digest('hex')
 
-		if (encryptReq !== encryptServer) {
+		if (encrypted !== encryptServer) {
 			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
 		}
 		const pdf = await getRepository(Pdf).createQueryBuilder('pdf')
@@ -200,15 +204,15 @@ export class PdfController {
 		}
 	}
 
-	async readEncrypt (req: Request, res: Response) {
-		const { encrypt_req: encryptReq, id } = req.params
+	async readEncrypted (req: Request, res: Response) {
+		const { encrypted, id } = req.params
 
-		if (!parseInt(id) || !encryptReq || !process.env.SECRET_CRYPTO_PDF) {
-			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypt_req'], 200)
+		if (!parseInt(id) || !encrypted || !process.env.SECRET_CRYPTO_PDF) {
+			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id', 'encrypted'], 200)
 		}
 		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_PDF).update(`${id}`).digest('hex')
 
-		if (encryptReq !== encryptServer) {
+		if (encrypted !== encryptServer) {
 			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
 		}
 		try {

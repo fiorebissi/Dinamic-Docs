@@ -1,25 +1,30 @@
 // eslint-disable-next-line no-unused-vars
 import fs, { PathLike } from 'fs'
 import csv from 'csv-parse'
+interface Respuesta { error: string | null, data?: string | null}
 
-export const readExcel = (pathAndExcel : PathLike) => {
-	const salida : any = []
-	return new Promise((resolve, reject) => {
-		fs.createReadStream(pathAndExcel, { encoding: 'utf8' }).pipe(csv()).on('data', (row) => {
-			salida.push({
-				firstName: row[0],
-				lastName: row[1],
-				email: row[2],
-				enterprise: row[3]
+export const readExcel = (pathAndExcel : PathLike, columns : Array<String>, delimiter : string) : Promise<Respuesta> => {
+	const data : any = []
+	return new Promise((resolve) => {
+		fs.createReadStream(pathAndExcel, { encoding: 'utf8' })
+			.pipe(csv({ delimiter }))
+			.on('data', (row) => {
+				if (row.length !== columns.length) {
+					resolve({ error: `Envió ${row.length} columnas y se requieren ${columns.length}`, data: null })
+				}
+				const oneData : any = {}
+				for (let i = 0; i < row.length; i++) {
+					oneData[`${columns[i]}`] = row[i]
+				}
+				data.push(oneData)
 			})
-		})
 			.on('end', () => {
-				resolve(salida)
+				resolve({ error: null, data })
 			})
 	})
 }
 
-export const encodeBasic = function (username: String, password: String) {
+export const encodeBasic = function (username: string, password: string) {
 	return Buffer.from(`${username}:${password}`).toString('base64')
 }
 
@@ -42,10 +47,7 @@ export const errorsToSnake = async (errores: Array<any>) => {
 	for await (const rowErr of errores) {
 		rowErr.property =
 
-      newArray.push({
-      	propiedad: rowErr.property.replace(/[A-Z]/g, (letter: any) => `_${letter.toLowerCase()}`),
-      	errores: Object.values(rowErr.constraints)
-      })
+      newArray.push({ propiedad: rowErr.property.replace(/[A-Z]/g, (letter: any) => `_${letter.toLowerCase()}`), errores: Object.values(rowErr.constraints) })
 	}
 	return newArray
 }
