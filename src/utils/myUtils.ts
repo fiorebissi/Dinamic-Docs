@@ -3,7 +3,7 @@ import fs, { PathLike } from 'fs'
 import csv from 'csv-parse'
 interface Respuesta { error: string | null, data?: string | null}
 
-export const readExcel = (pathAndExcel : PathLike, columns : Array<String>, delimiter : string) : Promise<Respuesta> => {
+export const readExcel = (pathAndExcel : PathLike, columns : Array<string>, delimiter : string) : Promise<Respuesta> => {
 	const data : any = []
 	return new Promise((resolve) => {
 		fs.createReadStream(pathAndExcel, { encoding: 'utf8' })
