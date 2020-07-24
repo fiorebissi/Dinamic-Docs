@@ -8,6 +8,8 @@ const FileDD = ({ templatedSelected, setDataDOM }) => {
 			Swal.fire('Ramon Chozas S.A', 'Debe seleccionar un template!', 'warning')
 		} else {
 			const formData = new FormData(document.forms.namedItem('formCsv'))
+			formData.append('delimiter', ';')
+			formData.append('name_template', templatedSelected.data.name)
 			const miInit = {
 				method: 'POST',
 				body: formData
@@ -55,9 +57,9 @@ const FileDD = ({ templatedSelected, setDataDOM }) => {
 
 	return (
 		<form encType='multipart/form-data' method='post' name='formCsv'>
-			<input className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='file' name='fileCSV' id='file' required />
+			<input className='px-4 py-2 m-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline' type='file' name='fileCSV' id='file' required />
 			<div className='text-center'>
-				<button onClick={(e) => handleClick(e)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded focus:outline-none focus:shadow-outline' type='button' value='Enviar'>Generar</button>
+				<button onClick={(e) => handleClick(e)} className='px-4 py-2 m-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline' type='button' value='Enviar'>Confirmar</button>
 			</div>
 		</form>
 	)

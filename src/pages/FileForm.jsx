@@ -7,6 +7,8 @@ import FileDD from '../components/FileDD'
 import Send from '../components/Send'
 import LoaderDualRing from '../components/LoaderDualRing'
 import sendMailSMS from '../sendMailSMS'
+import sms from '../assets/static/sms.svg'
+import email from '../assets/static/email.svg'
 
 const FileForm = ({ templates }) => {
 	const [dataDOM, setDataDOM] = useState(null)
@@ -46,22 +48,23 @@ const FileForm = ({ templates }) => {
 			if (input.checked === true) {
 				templatedSelected.data.variables.forEach((variable, i) => {
 					const { key, name } = variable
+					const generoDOM = document.getElementById(`${index}${name}`).innerText.toLowerCase()
+					let genero = 'o'
 					switch (i) {
 					case 0:
-						let genero = document.getElementById(`${index}${name}`).innerText.toLowerCase();
-						if (genero === 'masculino' || genero === 'm' || genero === 'o') {
+						if (generoDOM === 'masculino' || generoDOM === 'm' || generoDOM === 'o') {
 							genero = 'o'
 						}
-						if (genero === 'femenino' || genero === 'f' || genero === 'a') {
+						if (generoDOM === 'femenino' || generoDOM === 'f' || generoDOM === 'a') {
 							genero = 'a'
 						}
-						keys = { ...keys, '{{gender}}': genero }
-						break
-					case 1:
 						keys = { ...keys, '{{firstName}}': document.getElementById(`${index}${name}`).innerText }
 						break
-					case 2:
+					case 1:
 						keys = { ...keys, '{{lastName}}': document.getElementById(`${index}${name}`).innerText }
+						break
+					case 2:
+						keys = { ...keys, '{{gender}}': genero }
 						break
 					case 3:
 						keys = { ...keys, '{{city}}': document.getElementById(`${index}${name}`).innerText }
@@ -104,6 +107,8 @@ const FileForm = ({ templates }) => {
 						return { type: 'error' }
 					})
 					.then((response) => {
+						let linkPreview
+						let body
 						console.log(response)
 						if (response.type === 'error') {
 							Swal.fire(
@@ -112,16 +117,19 @@ const FileForm = ({ templates }) => {
 								'error'
 							)
 						} else {
+							linkPreview = response.body[0].url
+							body = response.body
 							Swal.fire('Ramon Chozas S.A', response.message, 'success')
 							document.querySelectorAll('.checkboxDownload').forEach((checkbox, index) => {
 								const input = checkbox
 								if (input.checked === true) {
 									rowSelected.current.push(index)
-									//document.querySelector(`#buttonSend${index}`).removeAttribute('disabled')
-									document.querySelector(`#buttonSend${index}`).addEventListener('click', () => { goToNextStep(index) })
+									// document.querySelector(`#buttonSend${index}`).removeAttribute('disabled')
+									// document.querySelector(`#buttonSend${index}`).addEventListener('click', () => { goToNextStep(index) })
 								}
 							})
 							dataGenerated.current = response
+							nextStep(linkPreview, body)
 							/* if (response.body.length >= 2) {
 								dataGenerated.current = response
 							} else {
@@ -139,6 +147,95 @@ const FileForm = ({ templates }) => {
 		})
 	}
 
+	const nextStep = (linkPreview, bodyGenerated) => {
+		const MySwal = withReactContent(Swal)
+		MySwal.fire({
+			title: '¿Que desea hacer?',
+			html: (
+				<div className='p-2'>
+					<div className='pb-4'>
+						<a href={linkPreview} target='_blank' className='px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700'>Ver Preview</a>
+					</div>
+					<div className='grid grid-cols-2 row-gap-2 col-gap-4'>
+						<p className='col-span-2 font-bold'>Enviar por:</p>
+						<div className='flex justify-end'>
+							<button className='p-2 text-center bg-blue-300 rounded hover:bg-blue-200' type='button'>
+								<div className='w-20 h-20'>
+									<img className='object-contain' src={email} alt='' />
+								</div>
+								<p className='font-semibold'>Mail</p>
+							</button>
+						</div>
+						<div className='flex justify-start'>
+							<button className='p-2 text-center bg-blue-300 rounded hover:bg-blue-200' type='button' onClick={() => sendManySms(bodyGenerated)}>
+								<div className='w-20 h-20'>
+									<img className='object-contain' src={sms} alt='' />
+								</div>
+								<p className='font-semibold'>SMS</p>
+							</button>
+						</div>
+					</div>
+				</div>
+			),
+			showConfirmButton: false,
+			allowOutsideClick: false
+		})
+	}
+
+	const sendManySms = (bodyGenerated) => {
+		const MySwal = withReactContent(Swal)
+		MySwal.fire({
+			title: 'Enviando SMS...',
+			html: (
+				<LoaderDualRing />
+			),
+			showConfirmButton: false,
+			allowOutsideClick: false,
+			onRender: () => {
+				const result = preparingSend(bodyGenerated)
+				console.log(result)
+				fetch('http://www.rchdynamic.com.ar/dd/document/send-many-sms', {
+					method: 'POST',
+					body: JSON.stringify({
+						obj_registros: result
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				}).then((response) => {
+					return response.json()
+				})
+					.catch((error) => {
+						console.log(error)
+						return { type: 'error' }
+					})
+					.then((response) => {
+						console.log(response)
+						if (response.type === 'error') {
+							Swal.fire(
+								'Ramon Chozas S.A',
+								response.message,
+								'error'
+							)
+						} else {
+							Swal.fire('Ramon Chozas S.A', 'Mensajes Enviados con exito', 'success')
+						}
+					})
+			}
+		})
+	}
+
+	const preparingSend = (bodyGenerated) => {
+		bodyGenerated.forEach(function (object) { delete object.url })
+		const phones = dataDOM.body.list_user.map((user) => {
+			return user.telefono
+		})
+		const result = bodyGenerated.map((object, index) => {
+			return { ...object, phone: phones[index] }
+		})
+		return result
+	}
+
 	const goToNextStep = (id) => {
 		let keys = {
 			'{{city}}': '',
@@ -152,16 +249,16 @@ const FileForm = ({ templates }) => {
 			const { key, name } = variable
 			switch (index) {
 			case 0:
-				keys = { ...keys, '{{city}}': document.getElementById(`${id}${name}`).innerText }
+				keys = { ...keys, '{{firstName}}': document.getElementById(`${id}${name}`).innerText }
 				break
 			case 1:
-				keys = { ...keys, '{{firstName}}': document.getElementById(`${id}${name}`).innerText }
+				keys = { ...keys, '{{lastName}}': document.getElementById(`${id}${name}`).innerText }
 				break
 			case 2:
 				keys = { ...keys, '{{gender}}': document.getElementById(`${id}${name}`).innerText }
 				break
 			case 3:
-				keys = { ...keys, '{{lastName}}': document.getElementById(`${id}${name}`).innerText }
+				keys = { ...keys, '{{city}}': document.getElementById(`${id}${name}`).innerText }
 				break
 			default:
 				break
@@ -193,6 +290,7 @@ const FileForm = ({ templates }) => {
 			})
 		}
 	}
+
 	return (
 		<main>
 			<div className='relative lg:grid lg:grid-cols-2 lg:gap-4'>
@@ -218,15 +316,17 @@ const FileForm = ({ templates }) => {
 														<input id='allCheckbox' onChange={selectAll} className='leading-tight' type='checkbox' defaultChecked={true} />
 													</label>
 												</th>
-												<th>Genero</th>
 												<th>Nombre</th>
 												<th>Apellido</th>
+												<th>Genero</th>
 												<th>Ciudad</th>
+												<th>Telefono</th>
+												<th>Email</th>
 											</tr>
 										</thead>
 										<tbody>
 											{dataDOM.body.list_user.map((data, index) => {
-												const { firstName, lastName, email, enterprise } = data
+												const { nombre, apellido, genero, ciudad, telefono, email } = data
 												const id = index
 												return (
 													<tr className='text-sm text-center' key={id}>
@@ -241,16 +341,22 @@ const FileForm = ({ templates }) => {
 															const keyIndex = index
 															switch (i) {
 															case 0:
-																tdText = firstName
+																tdText = nombre
 																break
 															case 1:
-																tdText = lastName
+																tdText = apellido
 																break
 															case 2:
-																tdText = email
+																tdText = genero
 																break
 															case 3:
-																tdText = enterprise
+																tdText = ciudad
+																break
+															case 4:
+																tdText = telefono
+																break
+															case 5:
+																tdText = email
 																break
 															}
 															return (
@@ -264,7 +370,7 @@ const FileForm = ({ templates }) => {
 									</table>
 								</div>
 								<div className='flex p-4 space-x-4'>
-									<button className='px-2 py-1 font-bold text-white bg-blue-500 rounded hover:bg-blue-700' type='button' onClick={() => handleDownload()}>Preparar envio</button>
+									<button className='px-2 py-1 font-bold text-white bg-blue-500 rounded hover:bg-blue-700' type='button' onClick={() => handleDownload()}>Generar</button>
 								</div>
 							</div>
 						)/* : dataDOM && <div><p>{`La cantidad de registros es: ${dataDOM.body.count}`}</p></div> */}
