@@ -117,7 +117,7 @@ const FileForm = ({ templates }) => {
 								const input = checkbox
 								if (input.checked === true) {
 									rowSelected.current.push(index)
-									document.querySelector(`#buttonSend${index}`).removeAttribute('disabled')
+									//document.querySelector(`#buttonSend${index}`).removeAttribute('disabled')
 									document.querySelector(`#buttonSend${index}`).addEventListener('click', () => { goToNextStep(index) })
 								}
 							})
@@ -171,8 +171,6 @@ const FileForm = ({ templates }) => {
 			indexRow = index
 			return row === id
 		})
-		console.log(dataGenerated.current.body)
-		console.log(indexRow)
 		if (Array.isArray(dataGenerated.current.body)) {
 			data = dataGenerated.current.body[indexRow]
 		} else {
@@ -197,37 +195,33 @@ const FileForm = ({ templates }) => {
 	}
 	return (
 		<main>
-			<div className='lg:grid lg:grid-cols-2 lg:gap-4 relative'>
+			<div className='relative lg:grid lg:grid-cols-2 lg:gap-4'>
 				{step === 1 && (
-					<div className='absolute z-10 bg-black opacity-75 top-0 left-0 w-full h-full rounded transform scale-105 pb-8' />
+					<div className='absolute top-0 left-0 z-10 w-full h-full pb-8 transform scale-105 bg-black rounded opacity-75' />
 				)}
 				<Template setMailingSelected={setMailingSelected} setTemplatedSelected={setTemplatedSelected} templates={{ ...templates, step }} />
 				{templatedSelected && (
-					<div className='bg-white w-full h-full flex flex-col justify-center items-center animated fadeIn'>
+					<div className='flex flex-col items-center justify-center w-full h-full bg-white animated fadeIn'>
 						<FileDD templatedSelected={templatedSelected} setDataDOM={setDataDOM} setStep={setStep} setDataMailing={setDataMailing} />
 						{dataDOM && (
 							<div className='max-w-full'>
 								<div>
-									<p className='text-right font-bold'>{`Cantidad de Registros Cargados: ${dataDOM.body.count}`}</p>
-								</div>
-								<div className='p-1'>
-									<p className="text-gray-600 italic">Selecione a quienes le quiere generar los documentos dinamicos y luego podra enviarlos por sms o por mail</p>
+									<p className='font-bold text-right'>{`Cantidad de Registros Cargados: ${dataDOM.body.count}`}</p>
 								</div>
 								<div className='overflow-x-auto'>
-									<table className='border-dotted border-4 border-blue-600 border-opacity-75 rounded-lg shadow-xl pt-8'>
+									<table className='pt-8 border-4 border-blue-600 border-opacity-75 border-dotted rounded-lg shadow-xl'>
 										<thead>
 											<tr>
-												<th>
-													<label className='flex flex-col py-2 px-1' htmlFor='allCheckbox'>
+												<th className='hidden'>
+													<label className='flex flex-col px-1 py-2' htmlFor='allCheckbox'>
                             Seleccionar
-														<input id='allCheckbox' onChange={selectAll} className='leading-tight' type='checkbox' />
+														<input id='allCheckbox' onChange={selectAll} className='leading-tight' type='checkbox' defaultChecked={true} />
 													</label>
 												</th>
 												<th>Genero</th>
 												<th>Nombre</th>
 												<th>Apellido</th>
 												<th>Ciudad</th>
-												<th className='font-bold'>Enviar</th>
 											</tr>
 										</thead>
 										<tbody>
@@ -235,10 +229,10 @@ const FileForm = ({ templates }) => {
 												const { firstName, lastName, email, enterprise } = data
 												const id = index
 												return (
-													<tr className='text-center text-sm' key={id}>
-														<td className='border p-1'>
-															<div className='flex justify-center items-center h-full w-full'>
-																<input className='leading-tight mt-1 checkboxDownload' type='checkbox' />
+													<tr className='text-sm text-center' key={id}>
+														<td className='hidden p-1 border'>
+															<div className='flex items-center justify-center w-full h-full'>
+																<input className='mt-1 leading-tight checkboxDownload' type='checkbox' defaultChecked={true} />
 															</div>
 														</td>
 														{ templatedSelected.data.variables.map((variable, i) => {
@@ -259,14 +253,10 @@ const FileForm = ({ templates }) => {
 																tdText = enterprise
 																break
 															}
-
 															return (
-																<td key={`${keyIndex}${name}`} className='border p-1' id={`${keyIndex}${name}`}>{tdText}</td>
+																<td key={`${keyIndex}${name}`} className='p-1 border' id={`${keyIndex}${name}`}>{tdText}</td>
 															)
 														})}
-														<td className='border p-1 flax justify-center items-center'>
-															<button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-blue-200' id={`buttonSend${id}`} type='button' onClick={() => console.log('keloke')} disabled={true}>Enviar</button>
-														</td>
 													</tr>
 												)
 											})}
@@ -274,7 +264,7 @@ const FileForm = ({ templates }) => {
 									</table>
 								</div>
 								<div className='flex p-4 space-x-4'>
-									<button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded' type='button' onClick={() => handleDownload()}>Generar Seleccionados</button>
+									<button className='px-2 py-1 font-bold text-white bg-blue-500 rounded hover:bg-blue-700' type='button' onClick={() => handleDownload()}>Preparar envio</button>
 								</div>
 							</div>
 						)/* : dataDOM && <div><p>{`La cantidad de registros es: ${dataDOM.body.count}`}</p></div> */}
@@ -283,8 +273,8 @@ const FileForm = ({ templates }) => {
 			</div>
 			{dataMailing.send && step === 1 && (
 				<div className='pb-12'>
-					<div className='text-center py-12'>
-						<button type='button' onClick={reset} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Volver al paso anterior</button>
+					<div className='py-12 text-center'>
+						<button type='button' onClick={reset} className='px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700'>Volver al paso anterior</button>
 					</div>
 					<div className='lg:grid lg:grid-cols-2'>
 						{ deviceIs() === 'desktop' && <Template setMailingSelected={setMailingSelected} setTemplatedSelected={setTemplatedSelected} templates={{ ...templates, step }} /> }
