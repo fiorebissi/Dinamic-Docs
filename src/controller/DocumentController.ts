@@ -57,13 +57,14 @@ export class DocumentController {
 				if (!result) {
 					return null
 				}
-				const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
-				arrayDocument.push({ id: document.id, encrypted: cryptoId })
+				const encrypted = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
+				arrayDocument.push({ id: document.id, encrypted })
 			}
 
 			if (data.length === 1) {
 				const documentBase64 : any = await fs.readFileSync(`${uploadsPath}\\document_generated\\${arrayDocument[0].id}.html`, 'base64')
-				const nuevoArray = { ...arrayDocument[0], base64: documentBase64 }
+				const url = `http://www.rchdynamic.com.ar/dd/document/encrypted/${arrayDocument[0].encrypted}/${arrayDocument[0].id}/view`
+				const nuevoArray = { ...arrayDocument[0], base64: documentBase64, url }
 				return responseJSON(true, 'document_created', 'Generado Correctamente', nuevoArray, 201)
 			}
 
@@ -318,19 +319,5 @@ export class DocumentController {
 		} catch (error) {
 			return responseJSON(false, 'document_not_found', 'Documento no encontrado en el servidor', [], 404)
 		}
-	}
-
-	async structuSms (id : string, encrypted : string, phone : string) {
-		if (!process.env.SECRET_CRYPTO_DOC || !process.env.USER_INFOBIP || !process.env.PASSWORD_INFOBIP) {
-			return responseJSON(false, 'error_internal', 'Sin credenciales para enviar sms', [], 500)
-		}
-		const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${id}`).digest('hex')
-
-		if (encrypted !== encryptServer) {
-			return responseJSON(false, 'error_unauthorized ', 'No Autorizado', [], 401)
-		}
-		const textSMS = `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${encrypted}/${id}/view`
-		const resultSMS : any = await sendSmsGET(phone, textSMS, process.env.USER_INFOBIP, process.env.PASSWORD_INFOBIP)
-		return responseJSON(true, 'sms_sent', 'Mensaje enviado', { result_message: resultSMS[0] }, 201)
 	}
 }
