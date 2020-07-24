@@ -38,24 +38,24 @@ const Template = ({ templates, setTemplatedSelected, setMailingSelected }) => {
 	}, [templates])
 
 	return (
-		<main className='w-full h-full flex flex-col'>
-			<h1 className='text-blue-600 text-2xl font-bold text-center'>Seleccione un Template:</h1>
-			<div className='pt-4'>
+		<main className='flex flex-col w-full h-full'>
+			<h1 className='text-2xl font-bold text-center text-blue-600'>Seleccione un Template:</h1>
+			<div className={`pt-4 ${!templates.state && 'flex'}`}>
 				{ !templates.state ? <LoaderDualRing /> : templates.type !== 'success'
 					? (
 						<div>
-							<h1 className='text-center text-xl text-red-700 font-bold'>¡Error!</h1>
+							<h1 className='text-xl font-bold text-center text-red-700'>¡Error!</h1>
 						</div>
 					) : dataTemplates && dataTemplates.data && dataTemplates.data.lenght <= 0 ? (
 						<div>
-							<h1 className='text-center text-xl text-red-700 font-bold'>No hay templates cargados</h1>
+							<h1 className='text-xl font-bold text-center text-red-700'>No hay templates cargados</h1>
 						</div>
 					) : dataTemplates && dataTemplates.data && (
-						<div className='flex flex-col md:grid md:grid-cols-3 md:gap-4 pb-8'>
+						<div className='flex flex-col pb-8 md:grid md:grid-cols-3 md:gap-4'>
 							{dataTemplates.data.map((template, index) => {
 								const { id, image, name } = template
 								return (
-									<div className='w-full py-2 px-8 md:w-auto md:p-0' key={name}>
+									<div className='w-full px-8 py-2 md:w-auto md:p-0' key={name}>
 										<button id={`${name}-${index}`} type='button' onClick={(e) => handleClick(e)} className={`buttonTemplate${dataTemplates.type} h-full w-full bg-blue-600 md:bg-white md:w-auto border-gray-900 hover:border-gray-500 hover:scale-110 duration-200 border-2 transform rounded cursor-pointer text-white py-2 md:py-0`}>
 											{deviceIs() === 'mobile' ? <p className='capitalize'>{name}</p> : <img className='object-contain' src={image} alt={name} />}
 										</button>
