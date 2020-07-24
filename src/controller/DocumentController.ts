@@ -10,6 +10,8 @@ import { readExcel } from '../utils/myUtils'
 import { createOne, createMany, createZIP } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { parseRequest } from '../utils/multipart'
+import { IResponseDocument } from '../interface/IDocument'
+import { IResponsePromise } from '../interface/IPromise'
 import { sendSmsGET, sendManySmsPOST, loginInfobip } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads')
@@ -35,7 +37,7 @@ export class DocumentController {
 
 		try {
 			const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
-			const arrayDocument : Array<any> = []
+			const arrayDocument : Array<IResponseDocument> = []
 			for await (const oneData of data) {
 				const document = await getRepository(Document).save({
 					template: template,
@@ -58,14 +60,8 @@ export class DocumentController {
 					return null
 				}
 				const encrypted = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
-				arrayDocument.push({ id: document.id, encrypted })
-			}
-
-			if (data.length === 1) {
-				const documentBase64 : any = await fs.readFileSync(`${uploadsPath}\\document_generated\\${arrayDocument[0].id}.html`, 'base64')
-				const url = `http://www.rchdynamic.com.ar/dd/document/encrypted/${arrayDocument[0].encrypted}/${arrayDocument[0].id}/view`
-				const nuevoArray = { ...arrayDocument[0], base64: documentBase64, url }
-				return responseJSON(true, 'document_created', 'Generado Correctamente', nuevoArray, 201)
+				const url = `http://www.rchdynamic.com.ar/dd/document/encrypted/${encrypted}/${document.id}/view`
+				arrayDocument.push({ id: document.id, encrypted, url })
 			}
 
 			return responseJSON(true, 'documents_created', 'Generados Correctamente', arrayDocument, 201)
@@ -136,13 +132,13 @@ export class DocumentController {
 	 * Recibe un archivo excel(csv) y retorna su contenido en un JSON.
 	 */
 	async receiveExcel (req: Request) {
-		const body : any = await parseRequest(req)
-		const { name_template: nameTemplate, delimiter } = body.fields
-		const { fileCSV } = body.files
+		const resultParse : IResponsePromise = await parseRequest(req)
 
-		if (body.result !== 'success') {
-			return responseJSON(false, 'document-parse_csv', body.message, [], 200)
+		if (resultParse.error) {
+			return responseJSON(false, 'document-parse_request', resultParse.message, [], 200)
 		}
+		const { name_template: nameTemplate, delimiter } = resultParse.body.fields
+		const { fileCSV } = resultParse.body.files
 
 		if (!nameTemplate || !delimiter) {
 			return responseJSON(false, 'document-name_template', 'Falta el template', ['name_template', 'delimiter'], 200)
@@ -169,7 +165,6 @@ export class DocumentController {
 			return responseJSON(false, 'document-template', 'Falta el template', [], 200)
 		}
 
-		// OBTENER UN ARRAY DE LA KEY DEL TEMPLATE
 		const arrayDeVariables : any = template.variables.map(row => row.name)
 
 		if (!arrayDeVariables || arrayDeVariables.length < 1) {
@@ -223,7 +218,7 @@ export class DocumentController {
 			return responseJSON(false, 'missing_parameters', 'Faltan Parametros', ['obj_registros'], 200)
 		}
 
-		const registrosErroneos : Array<any> = objRegistros.filter((one : any) => !Object.prototype.hasOwnProperty.call(one, 'id') || !Object.prototype.hasOwnProperty.call(one, 'encrypted') || !Object.prototype.hasOwnProperty.call(one, 'phone'))
+		const registrosErroneos : Array<object> = objRegistros.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'id') || !Object.prototype.hasOwnProperty.call(one, 'encrypted') || !Object.prototype.hasOwnProperty.call(one, 'phone'))
 
 		if (registrosErroneos.length > 0) {
 			return responseJSON(false, 'missing_parameters', 'Registros con error', registrosErroneos, 200)
