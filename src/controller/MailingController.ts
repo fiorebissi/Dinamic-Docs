@@ -8,8 +8,10 @@ import { Template } from '../entity/Template'
 import { Mailing } from '../entity/Mailing'
 import { createDocument } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
-import { sendMailExternal } from '../utils/mail'
+import { sendMailExternal, sendMail } from '../utils/mail'
 import { Document } from '../entity/Document'
+// eslint-disable-next-line no-unused-vars
+import { IMail } from '../interface/IMail'
 const templatePath = path.join(__dirname, '..\\resource\\template\\')
 const uploadsPath = path.join(__dirname, '..\\..\\uploads\\')
 
@@ -62,10 +64,10 @@ export class MailingController {
 	 * Crea uno o varios archivos mailing y lo aloja en el servidor
 	 */
 	async createMany (req : Request) {
-		const { obj_registers: objRegisters, name_template: nameTemplate } = req.body
+		const { records, name_template: nameTemplate } = req.body
 
-		if (!objRegisters || !nameTemplate) {
-			return responseJSON(false, 'request-missing_parameters', 'Faltan parametros', ['obj_registers', 'name_template'])
+		if (!records || !nameTemplate) {
+			return responseJSON(false, 'request-missing_parameters', 'Faltan parametros', ['records', 'name_template'])
 		}
 
 		const template = await getRepository(Template).createQueryBuilder('template')
@@ -76,7 +78,7 @@ export class MailingController {
 			return responseJSON(false, 'template-not_exist', 'Template no existe', [nameTemplate])
 		}
 
-		const registersErrors : Array<object> = objRegisters.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'variables'))
+		const registersErrors : Array<object> = records.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'variables'))
 
 		if (registersErrors.length > 0) {
 			return responseJSON(false, 'registers-missing_parameters', 'Registros con error', registersErrors, 200)
@@ -85,7 +87,7 @@ export class MailingController {
 		const mailing = await getRepository(Mailing).save({
 			template: template,
 			author: 'req.body.jwt_usuario_username',
-			count: objRegisters.length,
+			count: records.length,
 			isStatus: true,
 			createtAt: new Date(
 				new Date().toLocaleString('es-AR', {
@@ -98,12 +100,13 @@ export class MailingController {
 			await fs.mkdirSync(newDirectory)
 			let i = 1
 			const template = await fs.readFileSync(`${templatePath}\\mailing\\${nameTemplate}.html`, 'utf8')
-			for await (const register of objRegisters) {
-				const pathFileMailing = `${newDirectory}\\${i++}.html`
-				await createDocument(pathFileMailing, template, register.variables, false)
+			const newRecords : Array<any> = []
+			for await (const oneRecord of records) {
+				const pathFileMailing = `${newDirectory}\\${++i}.html`
+				await createDocument(pathFileMailing, template, oneRecord.variables, false)
+				newRecords.push({ index: i, to: oneRecord.to, title: 'hola' })
 			}
-
-			return responseJSON(true, 'mailing-created', 'Maling creados', { id: mailing.id, count: mailing.count }, 201)
+			return responseJSON(true, 'mailing-created', 'Maling creados', { id: mailing.id, new_records: newRecords, count: mailing.count }, 201)
 		} catch (error) {
 			return responseJSON(false, 'error-internal', 'Error Interno.', [], 200)
 		}
@@ -166,10 +169,10 @@ export class MailingController {
 	 * Crea uno o varios archivos mailing, luego los envia por mail junto con un enlace referenciado a un archivo "document".
 	 */
 	async createAndSendAddDocumentMany (req : Request) {
-		const { obj_registers: objRegisters, name_template: nameTemplate } = req.body
+		const { records, name_template: nameTemplate } = req.body
 
-		if (!objRegisters || !nameTemplate || !process.env.SECRET_CRYPTO_DOC) {
-			return responseJSON(false, 'request-missing_parameters', 'Faltan parametros', ['obj_registers', 'name_template'])
+		if (!records || !nameTemplate || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'request-missing_parameters', 'Faltan parametros', ['records', 'name_template'])
 		}
 
 		const template = await getRepository(Template).createQueryBuilder('template')
@@ -180,7 +183,7 @@ export class MailingController {
 			return responseJSON(false, 'template-not_exist', 'Template no existe', [nameTemplate])
 		}
 
-		const registersErrors : Array<object> = objRegisters.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'document_id') || !Object.prototype.hasOwnProperty.call(one, 'document_encrypted') || !Object.prototype.hasOwnProperty.call(one, 'email') || !Object.prototype.hasOwnProperty.call(one, 'variables'))
+		const registersErrors : Array<object> = records.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'document_id') || !Object.prototype.hasOwnProperty.call(one, 'document_encrypted') || !Object.prototype.hasOwnProperty.call(one, 'email') || !Object.prototype.hasOwnProperty.call(one, 'variables'))
 
 		if (registersErrors.length > 0) {
 			return responseJSON(false, 'registers-missing_parameters', 'Registros con error', registersErrors, 200)
@@ -189,7 +192,7 @@ export class MailingController {
 		const objMailing : Mailing = {
 			template: template,
 			author: 'req.body.jwt_usuario_username',
-			count: objRegisters.length,
+			count: records.length,
 			isStatus: true,
 			createtAt: new Date(
 				new Date().toLocaleString('es-AR', {
@@ -201,20 +204,16 @@ export class MailingController {
 			const mailing = await getRepository(Mailing).save(objMailing)
 			const newDirectory = `${uploadsPath}\\mailing_generated\\${mailing.id}`
 			await fs.mkdirSync(newDirectory)
-			const manyMaiing : Array<Object> = []
+			const manyMailing : Array<IMail> = []
 			let i = 1
 			const template = await fs.readFileSync(`${templatePath}\\mailing\\${nameTemplate}.html`, 'utf8')
-			for await (const register of objRegisters) {
+			for await (const register of records) {
 				const pathFileMailing = `${newDirectory}\\${i++}.html`
 				const htmlBases64 = await createDocument(pathFileMailing, template, register.variables, true)
-				manyMaiing.push({ from: '"Ramon Chozas" <contacto@documentosdinamicos.com.ar>', title: 'Probando de Probando', subject: 'Hola', to: register.to, html: Buffer.from(htmlBases64, 'base64').toString('utf8') })
+				manyMailing.push({ from: '"Ramon Chozas" <contacto@documentosdinamicos.com.ar>', subject: 'Hola', to: register.to, html: Buffer.from(htmlBases64, 'base64').toString('utf8') })
 			}
 
-			/// /////// Enviamos todos los MAILING'SSSSSSSSSSS
-			/// //////////////////////
-			const resultMail = 'resultado'
-			/// //////////////////////
-			/// //////////////////////
+			const { message: resultMail } = await sendMail(manyMailing)
 
 			return responseJSON(true, 'mailing-created', 'Maling creados y enviados', { id: mailing.id, result_mail: resultMail, count: mailing.count }, 201)
 		} catch (error) {
@@ -251,16 +250,16 @@ export class MailingController {
 	}
 
 	/**
-	 * Envia uno o varios archivos mailing(ya existente) por correo.
+	 * Envia uno o varios archivos mailing(ya existente) por correo electronico.
 	 */
 	async sendMany (req : Request) {
-		const { mailing_id: mailingID, obj_registers: objRegisters } = req.body
+		const { mailing_id: mailingID, records } = req.body
 
-		if (!mailingID || !objRegisters || objRegisters.length < 1) {
-			return responseJSON(false, 'request-missing_parameters', 'Faltan parametros', ['obj_registers', 'mailing_id'])
+		if (!mailingID || !records || records.length < 1) {
+			return responseJSON(false, 'request-missing_parameters', 'Faltan parametros', ['records', 'mailing_id'])
 		}
 
-		const registersErrors : Array<object> = objRegisters.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'to') || !Object.prototype.hasOwnProperty.call(one, 'title') || !Object.prototype.hasOwnProperty.call(one, 'index'))
+		const registersErrors : Array<object> = records.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'to') || !Object.prototype.hasOwnProperty.call(one, 'title') || !Object.prototype.hasOwnProperty.call(one, 'index'))
 
 		if (registersErrors.length > 0) {
 			return responseJSON(false, 'registers-missing_parameters', 'Registros con error', registersErrors, 200)
@@ -274,25 +273,25 @@ export class MailingController {
 			return responseJSON(false, 'mailing-not_exist', 'Mailing no existe', [])
 		}
 
-		if (objRegisters.length > mailing.count) {
+		if (records.length > mailing.count) {
 			return responseJSON(false, 'mailing-count', 'Envió mas registros de lo esperado.', [])
 		}
 
 		try {
-			const manyMailing : Array<Object> = []
-			for await (const register of objRegisters) {
+			const manyMailing : Array<IMail> = []
+			for await (const record of records) {
 				manyMailing.push({
-					to: register.to,
-					title: register.title,
-					file: await fs.readFileSync(`${uploadsPath}\\mailing_generated\\${mailingID}\\${register.index}.html`, 'utf8')
+					from: '"Ramon Chozas" <contacto@documentosdinamicos.com.ar>',
+					to: record.to,
+					subject: record.title,
+					html: await fs.readFileSync(`${uploadsPath}\\mailing_generated\\${mailingID}\\${record.index}.html`, 'utf8')
 				})
 			}
 
-			// enviamos los mailll
-			const resultMail = 'sdasd'
+			const { message: resultMail } = await sendMail(manyMailing)
 
 			return responseJSON(true, 'mailing-sent', 'Correo electronico fue enviado.', { id: mailingID, result_mail: resultMail, count: mailing.count }, 200)
-		} catch {
+		} catch (error) {
 			return responseJSON(false, 'mailing-error_read', 'Error en archivos del mailing', [])
 		}
 	}
@@ -338,12 +337,13 @@ export class MailingController {
 			return resultCreate
 		}
 
+		req.body.records = resultCreate.body.new_records
 		req.body.mailing_id = resultCreate.body.id
 		const resultSend : any = await this.sendMany(req)
 
 		if (resultSend.type !== 'success') {
 			return resultCreate
 		}
-		return responseJSON(true, 'mailing_created', 'Mailing creado y enviado.', { id: resultCreate.body.id }, 201)
+		return resultSend
 	}
 }

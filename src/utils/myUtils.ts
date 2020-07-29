@@ -28,6 +28,22 @@ export const encodeBasic = function (username: string, password: string) {
 	return Buffer.from(`${username}:${password}`).toString('base64')
 }
 
+export const decodeBasic = function (autorizacion : String) {
+	const [tipo, credenciales] = autorizacion.split(' ')
+
+	if (!tipo || !credenciales || tipo !== 'Basic') {
+		return { alias: null, contrseña: null }
+	}
+
+	const buffer = Buffer.from(credenciales, 'base64').toString('ascii')
+	const [alias, contraseña] = buffer?.split(':')
+
+	return {
+		alias,
+		contraseña
+	}
+}
+
 export const generateRandomString = function (length: Number) {
 	let randomString = ''
 	const possibleChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'

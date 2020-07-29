@@ -1,31 +1,33 @@
 // eslint-disable-next-line no-unused-vars
 import { Request, Response, NextFunction } from 'express'
 import axios from 'axios'
-import { encodeBasic, generateRandomString } from '../utils/myUtils'
+import { decodeBasic, encodeBasic } from '../utils/myUtils'
 import { responseJSON } from '../utils/responseUtil'
 import { createToken, validToken, tokenInHeader } from '../utils/Token'
 
 export class SecurityController {
 	async login (req: Request, res: Response) {
-		const { username, password } = req.body
-		const state = generateRandomString(16)
+		const { authorization } = req.headers
 
-		if (!username || username.length < 1 || !password || password.length < 1) {
-			return responseJSON(false, 'credentials_missing', 'Parameters are missing', ['username', 'password'])
+		if (!authorization) {
+			return responseJSON(false, 'credentials-missing', 'Falta cabecera de autorizacion', [])
+		}
+
+		const { alias, contraseña } = decodeBasic(authorization)
+
+		if (!alias || !contraseña) {
+			return responseJSON(false, 'authorization-invalid', 'Autorizacion mal generada.', [])
 		}
 
 		return axios({
-
 			method: 'post',
-			url: 'http://www.husaresfacil.com.ar/node_auth_server/login',
 			data: {
-				state,
-				grant_type: 'authentication_use',
-				alias: username,
-				contraseña: password
+				id: process.env.CLIENT_ID,
+				client: process.env.CLIENT_SECRET
 			},
+			url: 'http://www.husaresfacil.com.ar/node_auth_server/login',
 			headers: {
-				Authorization: `Basic ${await encodeBasic(username, password)}`,
+				Authorization: `Basic ${await encodeBasic(alias, contraseña)}`,
 				'Content-Type': 'application/json'
 			}
 		})

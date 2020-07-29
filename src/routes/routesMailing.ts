@@ -23,7 +23,7 @@ export const routesMailing = [
 		method: 'post',
 		route: '/mailing/send',
 		controller: MailingController,
-		action: 'send'
+		action: 'sendMany'
 	},
 	{
 		method: 'get',

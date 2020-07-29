@@ -7,10 +7,12 @@ import crypto from 'crypto'
 import { Template } from '../entity/Template'
 import { Document } from '../entity/Document'
 import { readExcel } from '../utils/myUtils'
-import { createOne, createMany, createZIP, createDocument } from '../utils/document'
+import { createZIP, createDocument } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { parseRequest } from '../utils/multipart'
+// eslint-disable-next-line no-unused-vars
 import { IResponseDocument } from '../interface/IDocument'
+// eslint-disable-next-line no-unused-vars
 import { IResponsePromise } from '../interface/IPromise'
 import { sendSmsGET, sendManySmsPOST, loginInfobip } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
