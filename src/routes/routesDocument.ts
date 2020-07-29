@@ -5,7 +5,7 @@ export const routesDocument = [
 		method: 'post',
 		route: '/document',
 		controller: DocumentController,
-		action: 'createHTML'
+		action: 'create'
 	},
 	{
 		method: 'post',

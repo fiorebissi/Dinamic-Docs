@@ -1,29 +1,68 @@
 
 import nodemailer from 'nodemailer'
 import axios from 'axios'
+// eslint-disable-next-line no-unused-vars
+import Mail from 'nodemailer/lib/mailer'
+// eslint-disable-next-line no-unused-vars
+import { IMail, IResponseTransporter } from '../interface/IMail'
+let transporter : Mail
 
-export const sendMail = async (toEmail : string, html : string) : Promise<Object> => {
-	// create reusable transporter object using the default SMTP transport
-	const transporter = nodemailer.createTransport({
-		host: '192.168.0.15',
-		port: 25,
-		secure: false
+export const createTransporter = async () : Promise<IResponseTransporter> => {
+	if (transporter) {
+		return { error: false, message: 'transporter existente' }
+	}
+	if (!process.env.MAILER_PORT || !process.env.MAILER_HOST) {
+		return { error: true, message: 'credenciales invalidas' }
+	}
+	transporter = await nodemailer.createTransport({
+		pool: true,
+		host: process.env.MAILER_HOST,
+		port: parseInt(process.env.MAILER_PORT),
+		secure: false,
+		tls: { rejectUnauthorized: false }
 	})
 
-	// send mail with defined transport object
-	const info = await transporter.sendMail({
-		from: '"Ramon Chozas" <contacto@documentosdinamicos.com.ar>', // sender address
-		to: toEmail, // list of receivers
-		subject: 'Documentos Dinamicos', // Subject line
-		html: html // html body
-	})
-
-	return info
+	return { error: false, message: 'transporter creado' }
 }
 
-export const sendMailExternal = (toClient : string, toEmail : string, html : string) => {
-	// const htmlToBase64 = Buffer.from(`${html}`).toString('base64')
+export const validTransporter = (cb : Function) => {
+	let end : IResponseTransporter
+	transporter.verify(function (error, success) {
+		if (error) {
+			end.error = true
+			end.message = error.message
+		} else {
+			end.error = false
+			end.message = 'error al validar '
+		}
+		cb(end)
+	})
+}
 
+export const sendMail = async (messages : Array<IMail>) : Promise<IResponseTransporter> => {
+	const { error, message } = await createTransporter()
+
+	if (error) {
+		return { error: true, message }
+	}
+	transporter.on('idle', () => {
+		while (transporter.isIdle() && messages.length) {
+			const message = messages.shift()
+			if (message) {
+				transporter.sendMail(message)
+			}
+		}
+	})
+	return { error: false, message: 'mail colocados en la cola' }
+}
+
+/**
+ * Consume un "endpoint" realizado en PHP para enviar un mail.
+ * @param toClient Es el cliente a quien le enviaremos el mail.
+ * @param toEmail Es la dirrecion de correo a donde enviaremos el mail.
+ * @param html Es el cuerpo HTML que tendra el mail.
+ */
+export const sendMailExternal = (toClient : string, toEmail : string, html : string) => {
 	return axios('http://ticketsymarbetes.com.ar/sendMailDD.php', {
 		method: 'POST',
 		data: JSON.stringify({
@@ -35,11 +74,6 @@ export const sendMailExternal = (toClient : string, toEmail : string, html : str
 			'Content-Type': 'application/json'
 		}
 	})
-		.then((objEnd) => {
-			const { data } = objEnd
-			return true
-		}).catch(function (error) {
-			console.info(`Error_1= ${error}`)
-			return false
-		})
+		.then((objEnd) => true)
+		.catch(() => false)
 }

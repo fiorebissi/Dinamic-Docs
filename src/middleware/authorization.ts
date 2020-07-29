@@ -1,3 +1,3 @@
 export const validRole = () => {
-  return true
+	return true
 }

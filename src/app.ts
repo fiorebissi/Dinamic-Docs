@@ -17,18 +17,6 @@ createConnection().then(async (connection: { name: any }) => {
 	app.use(cors({ origin: true, credentials: false }))
 	app.use('/dd/static/resource', express.static(path.join(__dirname, '../public/image')))
 
-	app.use((err : Error, req : Request, res : Response, next : NextFunction) => {
-		if (err) {
-			res.status(415).json({
-				status: 415,
-				result: 'error',
-				message: 'Error en Cabeceras o JSON'
-			})
-		} else {
-			next()
-		}
-	})
-
 	Routes.forEach(oneRoute => {
 		(app as any)[oneRoute.method](`/dd${oneRoute.route}`,
 			(req: Request, res: Response, next: NextFunction) => {
