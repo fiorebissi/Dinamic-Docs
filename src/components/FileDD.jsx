@@ -15,7 +15,7 @@ const FileDD = ({ templatedSelected, setDataDOM }) => {
 				body: formData
 				// credentials: 'include',
 			}
-			fetch(`http://www.rchdynamic.com.ar/dd/document/excel/${templatedSelected.data.name}`, miInit)
+			fetch('http://www.rchdynamic.com.ar/dd/document/excel/', miInit)
 			// fetch('http://localhost:3000/dd/document/create/excel', miInit)
 				.then((response) => response.json())
 				.catch((error) => {

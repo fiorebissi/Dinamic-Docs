@@ -74,14 +74,14 @@ const FileForm = ({ templates }) => {
 					}
 				})
 
-				data.push({ ...keys })
+				data.push({ variables: keys })
 			}
 		})
 		const miInit = {
 			method: 'POST',
 			body: JSON.stringify({
 				name_template: templatedSelected.data.name,
-				data: data
+				records: data
 			}),
 			headers: {
 				'Content-Type': 'application/json'
@@ -159,7 +159,7 @@ const FileForm = ({ templates }) => {
 					<div className='grid grid-cols-2 row-gap-2 col-gap-4'>
 						<p className='col-span-2 font-bold'>Enviar por:</p>
 						<div className='flex justify-end'>
-							<button className='p-2 text-center bg-blue-300 rounded hover:bg-blue-200' type='button'>
+							<button className='p-2 text-center bg-blue-300 rounded hover:bg-blue-200' type='button' onClick={() => sendManyMails(bodyGenerated)}>
 								<div className='w-20 h-20'>
 									<img className='object-contain' src={email} alt='' />
 								</div>
@@ -182,6 +182,51 @@ const FileForm = ({ templates }) => {
 		})
 	}
 
+	const sendManyMails = (bodyGenerated) => {
+		const MySwal = withReactContent(Swal)
+		const result = preparingSendMail(bodyGenerated)
+		console.log(result)
+		MySwal.fire({
+			title: 'Preparando mailing',
+			html: (
+				<LoaderDualRing />
+			),
+			showConfirmButton: false,
+			allowOutsideClick: false,
+			onRender: () => {
+				fetch('http://www.rchdynamic.com.ar/dd/mailing/create-and-send-addDocument', {
+					method: 'POST',
+					body: JSON.stringify({
+						name_template: 'campaña_dd',
+						records: result
+					}),
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				})
+					.then((response) => {
+						return response.json()
+					})
+					.catch((error) => {
+						console.log(error)
+						return { type: 'error' }
+					})
+					.then((response) => {
+						console.log(response)
+						if (response.type === 'error') {
+							Swal.fire(
+								'Ramon Chozas S.A',
+								response.message,
+								'error'
+							)
+						} else {
+							Swal.fire('Ramon Chozas S.A', 'Se comenzó el envío de mails', 'success')
+						}
+					})
+			}
+		})
+	}
+
 	const sendManySms = (bodyGenerated) => {
 		const MySwal = withReactContent(Swal)
 		MySwal.fire({
@@ -192,12 +237,12 @@ const FileForm = ({ templates }) => {
 			showConfirmButton: false,
 			allowOutsideClick: false,
 			onRender: () => {
-				const result = preparingSend(bodyGenerated)
+				const result = preparingSendSms(bodyGenerated)
 				console.log(result)
 				fetch('http://www.rchdynamic.com.ar/dd/document/send-many-sms', {
 					method: 'POST',
 					body: JSON.stringify({
-						obj_registros: result
+						records: result
 					}),
 					headers: {
 						'Content-Type': 'application/json'
@@ -225,7 +270,18 @@ const FileForm = ({ templates }) => {
 		})
 	}
 
-	const preparingSend = (bodyGenerated) => {
+	const preparingSendMail = (bodyGenerated) => {
+		bodyGenerated.forEach(function (object) { delete object.url })
+		const email = dataDOM.body.list_user.map((user) => {
+			return user.email
+		})
+		const result = bodyGenerated.map((object, index) => {
+			return { ...object, to: email[index] }
+		})
+		return result
+	}
+
+	const preparingSendSms = (bodyGenerated) => {
 		bodyGenerated.forEach(function (object) { delete object.url })
 		const phones = dataDOM.body.list_user.map((user) => {
 			return user.telefono

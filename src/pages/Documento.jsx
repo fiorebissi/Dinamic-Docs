@@ -50,8 +50,8 @@ const Documento = () => {
 		from: { transform: 'translate(500px, 0px)' }
 	})
 	return (
-		<div className='container mx-auto pt-8 animated fadeIn'>
-			<div className='flex justify-center text-center space-x-4 px-2 pb-4'>
+		<div className='container pt-8 mx-auto animated fadeIn'>
+			<div className='justify-center hidden px-2 pb-4 space-x-4 text-center'>
 				<animated.div style={leftToRight}>
 					<button onClick={() => goTo('formClient')} className={`${opSelect === 'formClient' ? 'bg-blue-700  shadow-outline' : 'bg-blue-500 hover:bg-blue-700 focus:outline-none focus:shadow-outline'} text-white font-bold py-2 px-4 rounded`} type='button'>
             Formulario Cliente
@@ -63,7 +63,7 @@ const Documento = () => {
 					</button>
 				</animated.div>
 			</div>
-			<div className='form_body relative'>
+			<div className='relative form_body'>
 				{transitions.map(({ item: location, props, key }) => (
 					<animated.div className='w-full' key={key} style={props}>
 						<Switch location={location}>
