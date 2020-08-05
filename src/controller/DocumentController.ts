@@ -7,10 +7,12 @@ import crypto from 'crypto'
 import { Template } from '../entity/Template'
 import { Document } from '../entity/Document'
 import { readExcel } from '../utils/myUtils'
-import { createOne, createMany, createZIP } from '../utils/document'
+import { createZIP, createDocument } from '../utils/document'
 import { responseJSON } from '../utils/responseUtil'
 import { parseRequest } from '../utils/multipart'
+// eslint-disable-next-line no-unused-vars
 import { IResponseDocument } from '../interface/IDocument'
+// eslint-disable-next-line no-unused-vars
 import { IResponsePromise } from '../interface/IPromise'
 import { sendSmsGET, sendManySmsPOST, loginInfobip } from '../utils/infobip'
 const templatesPath = path.join(__dirname, '..\\resource\\template')
@@ -19,79 +21,38 @@ const getTokenInfoBip = loginInfobip()
 
 export class DocumentController {
 	/**
-	 * crea uno o varios "document" dependiendo del "template" enviado.
+	 * Crea uno o varios archivos "document".
 	 */
-	async createHTML (req : Request) {
-		const { name_template: nameTemplate, data } = req.body
-		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
-			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
+	async create (req : Request) {
+		const { name_template: nameTemplate, records } = req.body
+		if (!nameTemplate || !records || records.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'parameters_missing', 'Faltan parametros', ['name_template', 'records'], 200)
 		}
 
 		const template = await getRepository(Template).createQueryBuilder('template')
 			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
+			.innerJoinAndSelect('template.variables', 'variable')
 			.getOne()
 
-		if (!template) {
-			return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate], 200)
+		if (!template || !template.variables) {
+			return responseJSON(false, 'template-not_exist', 'Template no existe', [nameTemplate], 200)
 		}
 
-		try {
-			const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
-			const arrayDocument : Array<IResponseDocument> = []
-			for await (const oneData of data) {
-				const document = await getRepository(Document).save({
-					template: template,
-					author: 'req.body.jwt_usuario_username',
-					count: 1,
-					isStatus: true,
-					createtAt: new Date(
-						new Date().toLocaleString('es-AR', {
-							timeZone: 'America/Argentina/Buenos_Aires'
-						})
-					)
-				})
-
-				if (!document || !document.id) {
-					return null
-				}
-
-				const result = await createOne(document.id, oneData, dataTemplate)
-				if (!result) {
-					return null
-				}
-				const encrypted = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
-				const url = `http://www.rchdynamic.com.ar/dd/document/encrypted/${encrypted}/${document.id}/view`
-				arrayDocument.push({ id: document.id, encrypted, url })
-			}
-
-			return responseJSON(true, 'documents_created', 'Generados Correctamente', arrayDocument, 201)
-		} catch (error) {
-			console.info('error.message :>> ', error.message)
-			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
+		/*
+		////////////////////////////////
+		VALIDAR QUE LOS "RECORDS" CUMPLAN CON LAS CANTIDAD DE VARIABLES QUE EXIGE EL TEMPLATE SELECCIONADO
+		const nameVariables : any = template.variables.map(row => row.name)
+		const registersErrors : Array<object> = records.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'variables'))
+		if (registersErrors.length > 0) {
+			return responseJSON(false, 'registers-error_struct', 'Algunos regitros son erroneos', registersErrors, 200)
 		}
-	}
-
-	/**
- 	*	Crea un o unos "Document". De ser varios, genera un ZIP.
- 	*/
-	async createHtmlAndGenerateZip (req : Request) {
-		const { name_template: nameTemplate, data } = req.body
-		if (!nameTemplate || !data || data.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
-			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['name_template', 'variables'], 200)
-		}
-
-		const template = await getRepository(Template).createQueryBuilder('template')
-			.where('template.isStatus = true AND template.name = :arg_name', { arg_name: nameTemplate })
-			.getOne()
-
-		if (!template) {
-			return responseJSON(false, 'template_not_exist', 'Template no existe', [nameTemplate], 200)
-		}
+		////////////////////////////////
+		*/
 
 		const document = await getRepository(Document).save({
 			template: template,
 			author: 'req.body.jwt_usuario_username',
-			count: data.length,
+			count: records.length,
 			isStatus: true,
 			createtAt: new Date(
 				new Date().toLocaleString('es-AR', {
@@ -100,30 +61,50 @@ export class DocumentController {
 			)
 		})
 
+		try {
+			const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
+			const newDirectory = `${uploadsPath}\\document_generated\\${document.id}`
+			await fs.mkdirSync(newDirectory)
+			const arrayDocument : Array<IResponseDocument> = []
+			const arrayErrors : Array<Object> = []
+			let i = 0
+			for await (const record of records) {
+				const result = await createDocument(`${newDirectory}\\${++i}.html`, dataTemplate, record, false)
+				if (!result) {
+					return arrayErrors.push({ i, error: 'Error en crear document' })
+				}
+				const encrypted = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}-${i}`).digest('hex')
+				const url = `http://www.rchdynamic.com.ar/dd/document/encrypted/${encrypted}/${document.id}-${i}/view`
+				arrayDocument.push({ id: document.id, index: i, encrypted, url })
+			}
+
+			return responseJSON(true, 'documents-created', 'Generados Correctamente', arrayDocument, 201)
+		} catch {
+			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
+		}
+	}
+
+	/**
+ 	*	Genera un zip con todos los "records" del "document" indicado.
+ 	*/
+	async generateZip (req : Request) {
+		const { id } = req.body
+		if (!id || !process.env.SECRET_CRYPTO_DOC) {
+			return responseJSON(false, 'parameters_missing', 'Parameters are missing', ['id'])
+		}
+
+		const document = await getRepository(Document).createQueryBuilder('document')
+			.where('document.isStatus = true AND document.id = :arg_id', { arg_id: id })
+			.getOne()
+
 		if (!document || !document.id) {
-			return responseJSON(false, 'document-error_document', 'Error al registrar documento', [], 200)
+			return responseJSON(false, 'document-not_exist', 'Document no existe', [])
 		}
 		try {
-			const cryptoId = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
-			const dataTemplate = await fs.readFileSync(`${templatesPath}\\document\\${template.nameFile}`, 'utf8')
-			if (data.length > 1) {
-				const result = await createMany(document.id, data, dataTemplate)
-				if (result.length > 1) {
-					return responseJSON(false, 'document-error_many', 'Error en algunos registros', result, 200)
-				}
-				await createZIP(document.id)
-				return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', { id: document.id, encrypted: cryptoId }, 201)
-			}
-
-			const result = await createOne(document.id, data[0], dataTemplate)
-
-			if (!result) {
-				return responseJSON(false, 'document-error_created', 'Error al generar documento', [], 200)
-			}
-
-			return responseJSON(true, 'document_created', 'Generado Correctamente', { id: document.id, encrypted: cryptoId, base64: result }, 201)
+			const encrypted = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${document.id}`).digest('hex')
+			await createZIP(document.id)
+			return responseJSON(true, 'document-zip_created', 'Archivo ZIP Generado Correctamente', { id: document.id, encrypted })
 		} catch (error) {
-			console.info('error.message :>> ', error.message)
 			return responseJSON(false, 'document-error_internal', 'Error Interno', [], 200)
 		}
 	}
@@ -213,42 +194,45 @@ export class DocumentController {
 	 * Envia varios mensajes texto con un enlace al "document" solicitado.
 	 */
 	async sendManySMS (req: Request) {
-		const { obj_registros: objRegistros } = req.body
-		if (!objRegistros || objRegistros.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
+		const { records } = req.body
+		if (!records || records.length < 1 || !process.env.SECRET_CRYPTO_DOC) {
 			return responseJSON(false, 'missing_parameters', 'Faltan Parametros', ['obj_registros'], 200)
 		}
 
-		const registrosErroneos : Array<object> = objRegistros.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'id') || !Object.prototype.hasOwnProperty.call(one, 'encrypted') || !Object.prototype.hasOwnProperty.call(one, 'phone'))
+		const recordErrors : Array<object> = records.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'id') || !Object.prototype.hasOwnProperty.call(one, 'encrypted') || !Object.prototype.hasOwnProperty.call(one, 'phone'))
 
-		if (registrosErroneos.length > 0) {
-			return responseJSON(false, 'missing_parameters', 'Registros con error', registrosErroneos, 200)
+		if (recordErrors.length > 0) {
+			return responseJSON(false, 'missing_parameters', 'Registros con error', recordErrors, 200)
 		}
-		/*
-		if (id !== req.body.jwt_user_id) {
-			return responseJSON(false, 'error_unauthorized', 'No Autorizado', [], 401)
-		}
-		*/
 
 		const errorsSMS : Array<Object> = []
 		const manySMS : Array<Object> = []
-		for await (const registro of objRegistros) {
-			const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${registro.id}`).digest('hex')
-			if (registro.encrypted !== encryptServer) {
-				errorsSMS.push(registro)
-			} else {
-				manySMS.push({
-					from: '41793026700',
-					destinations: [{ to: registro.phone }],
-					text: `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${registro.encrypted}/${registro.id}/view`
-				})
-			}
+		for await (const record of records) {
+			/// /////////////////
+			/// //////Este codigo valida que el "encrypted" recibido sera correcto.
+			/// ////// Pero obviamente hace demorar mas la respuesta.
+			/// //////////
+			// const encryptServer = crypto.createHmac('sha256', process.env.SECRET_CRYPTO_DOC).update(`${registro.id}`).digest('hex')
+			// if (registro.encrypted !== encryptServer) {
+			// errorsSMS.push(registro)
+			// } else {
+			manySMS.push({
+				from: '41793026700',
+				destinations: [{ to: record.phone }],
+				text: `Hola. Ingresa a la siguiente URL para ver el documento http://www.rchdynamic.com.ar/dd/document/encrypted/${record.encrypted}/${record.id}/view`
+			})
+			// }
 		}
 
 		if (manySMS.length < 1) {
 			return responseJSON(false, 'data-undefined', 'No hay registros validos', [], 200)
 		}
 
-		await sendManySmsPOST(manySMS, await getTokenInfoBip())
+		const tokenInfoBip = await getTokenInfoBip()
+		if (!tokenInfoBip) {
+			return responseJSON(false, 'error-credenciales', 'No se pudo enviar ningun mensaje.', [])
+		}
+		await sendManySmsPOST(manySMS, tokenInfoBip)
 		return responseJSON(true, 'sms_sent', 'Mensajes enviados', errorsSMS, 201)
 	}
 

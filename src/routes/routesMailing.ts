@@ -5,7 +5,7 @@ export const routesMailing = [
 		method: 'post',
 		route: '/mailing',
 		controller: MailingController,
-		action: 'create'
+		action: 'createMany'
 	},
 	{
 		method: 'post',
@@ -15,9 +15,15 @@ export const routesMailing = [
 	},
 	{
 		method: 'post',
+		route: '/mailing/create-and-send-addDocument',
+		controller: MailingController,
+		action: 'createAndSendAddDocument'
+	},
+	{
+		method: 'post',
 		route: '/mailing/send',
 		controller: MailingController,
-		action: 'send'
+		action: 'sendMany'
 	},
 	{
 		method: 'get',
