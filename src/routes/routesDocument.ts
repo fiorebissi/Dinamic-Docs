@@ -9,7 +9,7 @@ export const routesDocument = [
 	},
 	{
 		method: 'post',
-		route: '/document/excel/:name_template',
+		route: '/document/excel',
 		controller: DocumentController,
 		action: 'receiveExcel'
 	},

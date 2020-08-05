@@ -19,7 +19,7 @@ const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
 			method: 'POST',
 			body: JSON.stringify({
 				name_template: templatedSelected.data.name,
-				data: [{
+				records: [{
 					...data
 				}]
 			}),
@@ -81,14 +81,14 @@ const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
 	}
 
 	return (
-		<main className='w-full h-full items-center flex flex-col justify-center min-w-full min-h-full animated fadeIn'>
-			<h1 className='text-gray-700 text-xl font-bold capitalize'>{templatedSelected.data.name}</h1>
-			<form onSubmit={(e) => handleSend(e)} className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-4'>
+		<main className='flex flex-col items-center justify-center w-full h-full min-w-full min-h-full animated fadeIn'>
+			<h1 className='text-xl font-bold text-gray-700 capitalize'>{templatedSelected.data.name}</h1>
+			<form onSubmit={(e) => handleSend(e)} className='px-8 pt-6 pb-8 mb-4 space-y-4 bg-white rounded shadow-md'>
 				{templatedSelected.data && templatedSelected.data.variables.map((variable, index) => {
 					const { id, key, name, type } = variable
 					if (type === 'select') {
 						return (
-							<select id={name} key={key} className="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" required >
+							<select id={name} key={key} className="block w-full px-4 py-3 pr-8 leading-tight text-gray-700 bg-gray-200 border border-gray-200 rounded appearance-none focus:outline-none focus:bg-white focus:border-gray-500" required >
 								<option value=''>---</option>
 								<option value='o'>Masculino</option>
 								<option value='a'>Femenino</option>
@@ -100,7 +100,7 @@ const FormDD = ({ setDataMailing, setStep, templatedSelected }) => {
 					)
 				})}
 				<div className='flex items-center justify-between'>
-					<button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline' type='submit'>
+					<button className='px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline' type='submit'>
             Generar Documento Dinamico
 					</button>
 				</div>

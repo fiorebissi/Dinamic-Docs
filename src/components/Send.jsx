@@ -37,7 +37,7 @@ const Send = ({ dataMailing, mailingSelected }) => {
 			// credentials: 'include',
 		}
 
-		return fetch('http://www.rchdynamic.com.ar/dd/mailing/create-and-send/', header)
+		return fetch('http://www.rchdynamic.com.ar/dd/mailing/create-and-send-addDocument', header)
 			.then((response) => {
 				return response.json()
 			})
@@ -113,9 +113,9 @@ const Send = ({ dataMailing, mailingSelected }) => {
 	}, [])
 
 	return (
-		<div className='animated fadeIn px-4'>
-			<h1 className='text-gray-700 text-xl font-bold text-center'>{mailingSelected.name}</h1>
-			<form onSubmit={(e) => handleCreate(e)} className='bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 space-y-4'>
+		<div className='px-4 animated fadeIn'>
+			<h1 className='text-xl font-bold text-center text-gray-700'>{mailingSelected.name}</h1>
+			<form onSubmit={(e) => handleCreate(e)} className='px-8 pt-6 pb-8 mb-4 space-y-4 bg-white rounded shadow-md'>
 				{ mailingSelected.variables.map((variable, index) => {
 					const { id, key, name, type } = variable
 					const flag = Object.keys(dataMailing).some((data) => {
@@ -129,10 +129,10 @@ const Send = ({ dataMailing, mailingSelected }) => {
 					)
 				})}
 				<div className='flex flex-col justify-between space-y-4'>
-					<button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' type='submit'>
+					<button className='px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' type='submit'>
             Enviar Mailing
 					</button>
-					{/* <button onClick={enviar} type='button' className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' disabled={isDisabled}>
+					{/* <button onClick={enviar} type='button' className='px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700 focus:outline-none focus:shadow-outline disabled:opacity-75 disabled:cursor-not-allowed' disabled={isDisabled}>
             Enviar Mailing
       </button> */}
 				</div>
