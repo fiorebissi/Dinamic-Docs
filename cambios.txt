@@ -1,0 +1,6 @@
+manyemail encrypted not working
+sendmanysms not working variables in petition.
+
+Mejorar flujo
+
+cambiar pruebas.csv
