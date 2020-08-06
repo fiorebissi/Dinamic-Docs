@@ -199,7 +199,7 @@ export class DocumentController {
 			return responseJSON(false, 'missing_parameters', 'Faltan Parametros', ['obj_registros'], 200)
 		}
 
-		const recordErrors : Array<object> = records.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'id') || !Object.prototype.hasOwnProperty.call(one, 'encrypted') || !Object.prototype.hasOwnProperty.call(one, 'phone'))
+		const recordErrors : Array<object> = records.filter((one : object) => !Object.prototype.hasOwnProperty.call(one, 'document_id') || !Object.prototype.hasOwnProperty.call(one, 'document_encrypted') || !Object.prototype.hasOwnProperty.call(one, 'phone'))
 
 		if (recordErrors.length > 0) {
 			return responseJSON(false, 'missing_parameters', 'Registros con error', recordErrors, 200)
